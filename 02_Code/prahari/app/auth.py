@@ -104,13 +104,23 @@ def current_actor() -> str:
     return "anonymous"
 
 
+#: The web UI sends this header on every request. The UI authenticates by session
+#: cookie only: a browser silently re-sends any Basic credentials it once cached,
+#: which would make Sign out impossible until the browser is closed.
+WEB_CLIENT_HEADER = "x-prahari-client"
+
+
+def _is_web_client(request: Request) -> bool:
+    return request.headers.get(WEB_CLIENT_HEADER, "").lower() == "web"
+
+
 def get_user(
     request: Request,
     credentials: HTTPBasicCredentials | None = Depends(http_basic),
     prahari_session: str | None = Cookie(default=None),
     authorization: str | None = Header(default=None),
 ) -> User | None:
-    if credentials:
+    if credentials and not _is_web_client(request):
         user = lookup_user(credentials.username, credentials.password)
         if user:
             return user
@@ -122,12 +132,15 @@ def get_user(
     return None
 
 
-def require_user(user: User | None = Depends(get_user)) -> User:
+def require_user(request: Request, user: User | None = Depends(get_user)) -> User:
     if user is None:
+        # No Basic challenge for the web UI: it would pop the browser's native
+        # login dialog on top of PRAHARI's own sign-in screen.
+        headers = None if _is_web_client(request) else {"WWW-Authenticate": "Basic"}
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="login required",
-            headers={"WWW-Authenticate": "Basic"},
+            headers=headers,
         )
     return user
 

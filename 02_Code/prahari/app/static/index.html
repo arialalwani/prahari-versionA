@@ -4,217 +4,420 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PRAHARI · Yushu Excellence</title>
+  <meta name="description" content="PRAHARI statewide CCTV intelligence plane: camera registry, ANPR, watchlist alerts and vehicle track reconstruction.">
   <link rel="icon" href="/logo-yushu.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
 <body>
+  <!-- Icon sprite. Stroke icons, 24px grid, inherit currentColor. -->
+  <svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 7h11a2 2 0 0 1 2 2v1l5-3v10l-5-3v1a2 2 0 0 1-2 2H3z"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5h.01"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="13" r="1"/><circle cx="16.5" cy="13" r="1"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 8l-4 4 4 4M6 12h10"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-signal" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></symbol>
+  </svg>
+
   <div id="login-card" class="login">
-    <p class="brand"><img src="/logo-yushu.png" alt="Yushu Excellence" width="36" height="36">PRAHARI</p>
-    <p class="dept">Yushu Excellence · SOC</p>
-    <label class="field" for="user">User
-      <input id="user" value="judge" autocomplete="username">
-    </label>
-    <label class="field" for="pass">Password
-      <input id="pass" type="password" autocomplete="current-password">
-    </label>
-    <button type="button" id="login-btn">Log in</button>
-    <p id="login-err" class="err" role="alert"></p>
-    <p class="hint">SOC operator password is JUDGE_PASSWORD in the local environment. Change defaults before a hosted demo.</p>
+    <section class="login-brand" aria-label="About PRAHARI">
+      <p class="brand"><img src="/logo-yushu.png" alt="Yushu Excellence" width="40" height="40">PRAHARI</p>
+      <p class="login-tag">Statewide CCTV intelligence plane</p>
+      <ul class="login-points">
+        <li><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-camera"/></svg><span>One registry for government and permitted private cameras</span></li>
+        <li><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-scan"/></svg><span>ANPR with Indian-plate validation. Raw OCR is always kept beside the verdict</span></li>
+        <li><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-bell"/></svg><span>Watchlist matching with audited, acknowledged alerts</span></li>
+        <li><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-route"/></svg><span>Vehicle route reconstruction with CSV evidence export</span></li>
+      </ul>
+      <p class="login-foot">Yushu Excellence Technologies Pvt. Ltd.</p>
+    </section>
+    <section class="login-form" aria-label="Sign in">
+      <h2>Operator sign-in</h2>
+      <p class="dept">Yushu Excellence · SOC</p>
+      <form id="login-form" novalidate>
+        <label class="field" for="user">User
+          <input id="user" value="judge" autocomplete="username">
+        </label>
+        <label class="field" for="pass">Password
+          <input id="pass" type="password" autocomplete="current-password">
+        </label>
+        <button type="submit" id="login-btn" class="primary block">Log in</button>
+      </form>
+      <p id="login-err" class="err" role="alert"></p>
+      <p class="hint">SOC operator password is JUDGE_PASSWORD in the local environment. Change defaults before a hosted demo.</p>
+      <p class="classification"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-shield"/></svg>Authorised operators only. Every action is written to the audit log.</p>
+    </section>
   </div>
 
   <div id="app" class="hidden">
     <header class="top">
       <div class="wordmark">
-        <img src="/logo-yushu.png" alt="Yushu Excellence" width="28" height="28">
+        <img src="/logo-yushu.png" alt="Yushu Excellence" width="30" height="30">
         <div>
           <h1>PRAHARI</h1>
           <p class="dept">Yushu Excellence · SOC</p>
         </div>
       </div>
       <span class="chip" id="hybrid-chip">Intelligence plane</span>
-      <div id="health-line" class="health-chips">Loading health…</div>
-      <div id="banner" class="hint"></div>
-      <span id="clock"></span>
+      <div id="health-line" class="health-chips" aria-live="polite">Loading health…</div>
+      <div class="top-right">
+        <div id="banner" class="hint"></div>
+        <span id="clock" aria-label="Current time, IST"></span>
+        <span id="whoami" class="whoami"></span>
+        <button type="button" id="logout-btn" class="ghost-inv" title="Sign out"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-logout"/></svg><span class="sr-only">Sign out</span></button>
+      </div>
     </header>
-    <nav class="tabs" role="tablist">
-      <button class="tab on" id="tab-operations" data-tab="operations" type="button" role="tab" aria-selected="true" aria-controls="panel-operations">Operations</button>
-      <button class="tab" id="tab-cameras" data-tab="cameras" type="button" role="tab" aria-selected="false" aria-controls="panel-cameras">Cameras</button>
-      <button class="tab" id="tab-track" data-tab="track" type="button" role="tab" aria-selected="false" aria-controls="panel-track">Vehicle Track</button>
-      <button class="tab" id="tab-alerts" data-tab="alerts" type="button" role="tab" aria-selected="false" aria-controls="panel-alerts">Alerts</button>
-      <button class="tab" id="tab-watchlist" data-tab="watchlist" type="button" role="tab" aria-selected="false" aria-controls="panel-watchlist">Watchlist</button>
-      <button class="tab" id="tab-onboard" data-tab="onboard" type="button" role="tab" aria-selected="false" aria-controls="panel-onboard">Onboard</button>
-      <button class="tab" id="tab-gaps" data-tab="gaps" type="button" role="tab" aria-selected="false" aria-controls="panel-gaps">Analytics &amp; Gaps</button>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab on" id="tab-operations" data-tab="operations" type="button" role="tab" aria-selected="true" aria-controls="panel-operations"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-grid"/></svg>Operations</button>
+      <button class="tab" id="tab-cameras" data-tab="cameras" type="button" role="tab" aria-selected="false" aria-controls="panel-cameras"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-camera"/></svg>Cameras<span class="count" id="count-cameras"></span></button>
+      <button class="tab" id="tab-track" data-tab="track" type="button" role="tab" aria-selected="false" aria-controls="panel-track"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-route"/></svg>Vehicle Track</button>
+      <button class="tab" id="tab-alerts" data-tab="alerts" type="button" role="tab" aria-selected="false" aria-controls="panel-alerts"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-bell"/></svg>Alerts<span class="count crit" id="count-alerts"></span></button>
+      <button class="tab" id="tab-watchlist" data-tab="watchlist" type="button" role="tab" aria-selected="false" aria-controls="panel-watchlist"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-list"/></svg>Watchlist</button>
+      <button class="tab" id="tab-onboard" data-tab="onboard" type="button" role="tab" aria-selected="false" aria-controls="panel-onboard"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-plus"/></svg>Onboard</button>
+      <button class="tab" id="tab-gaps" data-tab="gaps" type="button" role="tab" aria-selected="false" aria-controls="panel-gaps"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-chart"/></svg>Analytics &amp; Gaps</button>
     </nav>
     <main>
+      <!-- OPERATIONS -->
       <section id="panel-operations" class="panel on" role="tabpanel" aria-labelledby="tab-operations">
-        <div class="split">
-          <div id="map" class="map" aria-label="Gujarat camera map"></div>
+        <div class="page-head">
           <div>
-            <h2>Video wall (max 4)</h2>
-            <p id="tile-empty" class="empty">Click a map pin, then Open tile. Drop own_feed.mp4 into 03_Data/recordings for CAM-OWN-001.</p>
-            <p id="tile-err" class="err" role="alert"></p>
-            <div id="wall" class="wall"></div>
+            <h2>Operations overview</h2>
+            <p class="sub">Registry, live viewing and watchlist activity across the grid.</p>
+          </div>
+        </div>
+        <div id="kpis" class="kpis" aria-label="Key figures">
+          <div class="kpi skeleton"></div><div class="kpi skeleton"></div><div class="kpi skeleton"></div><div class="kpi skeleton"></div><div class="kpi skeleton"></div>
+        </div>
+        <div class="split">
+          <div class="card map-card">
+            <div class="card-head">
+              <h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-pin"/></svg>Camera map · Gujarat</h3>
+              <span class="hint">Select a pin to open its feed</span>
+            </div>
+            <div id="map" class="map" aria-label="Gujarat camera map"></div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="card-head">
+                <h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-camera"/></svg>Video wall <span class="muted">(max 4)</span></h3>
+                <span id="wall-count" class="pill neutral">0 / 4</span>
+              </div>
+              <p id="tile-empty" class="empty">Click a map pin, then Open tile. Drop own_feed.mp4 into 03_Data/recordings for CAM-OWN-001.</p>
+              <p id="tile-err" class="err" role="alert"></p>
+              <div id="wall" class="wall"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-bell"/></svg>Priority alerts</h3>
+                <button type="button" class="link-btn" data-goto="alerts">View all</button>
+              </div>
+              <div id="ops-alerts" class="feed"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-scan"/></svg>Latest plate reads</h3>
+                <button type="button" class="link-btn" data-goto="alerts">History</button>
+              </div>
+              <div id="ops-reads" class="feed"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
+            </div>
           </div>
         </div>
       </section>
+
+      <!-- CAMERAS -->
       <section id="panel-cameras" class="panel" role="tabpanel" aria-labelledby="tab-cameras">
-        <h2>Cameras</h2>
-        <div id="filters" class="chips"></div>
-        <div class="table-wrap"><table id="cam-table"></table></div>
+        <div class="page-head">
+          <div>
+            <h2>Cameras</h2>
+            <p class="sub">Heterogeneous registry: government, private-permitted and own feeds. Streams are tokenised and never exposed raw.</p>
+          </div>
+          <label class="search" for="cam-search"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Search cameras</span>
+            <input id="cam-search" type="search" placeholder="Search ID, location, codec">
+          </label>
+        </div>
+        <div id="filters" class="chips" aria-label="Department filter"></div>
+        <div class="card flush"><div class="table-wrap"><table id="cam-table"></table></div></div>
       </section>
+
+      <!-- VEHICLE TRACK -->
       <section id="panel-track" class="panel" role="tabpanel" aria-labelledby="tab-track">
-        <h2>Vehicle Track</h2>
-        <form id="track-form" class="toolbar">
-          <label class="field" for="plate-search">Plate
-            <input id="plate-search" value="GJ01AB1234" placeholder="GJ01AB1234">
-          </label>
-          <button type="submit">Reconstruct</button>
-          <button type="button" id="predict-btn">Next cameras</button>
-          <a id="csv-link" href="/api/track/GJ01AB1234/report.csv">Download CSV</a>
-        </form>
-        <p id="track-meta"></p>
-        <details>
-          <summary>Next cameras</summary>
-          <pre id="predict-out"></pre>
-        </details>
-        <div id="track-map" class="map" aria-label="Vehicle track map"></div>
-        <div class="table-wrap"><table id="track-table"></table></div>
+        <div class="page-head">
+          <div>
+            <h2>Vehicle Track</h2>
+            <p class="sub">Reconstruct a registration's route, timestamps and locations across the grid.</p>
+          </div>
+        </div>
+        <div class="card">
+          <form id="track-form" class="toolbar">
+            <label class="field" for="plate-search">Plate
+              <input id="plate-search" class="plate-input" value="GJ01AB1234" placeholder="GJ01AB1234" autocomplete="off" spellcheck="false">
+            </label>
+            <button type="submit" class="primary"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-route"/></svg>Reconstruct</button>
+            <button type="button" id="predict-btn"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-signal"/></svg>Next cameras</button>
+            <a id="csv-link" class="btn" href="/api/track/GJ01AB1234/report.csv"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-download"/></svg>Download CSV</a>
+            <span class="hint kbd-hint">Press <kbd>/</kbd> to search a plate</span>
+          </form>
+          <p id="track-meta"></p>
+          <div id="track-summary" class="track-summary"></div>
+          <details id="predict-box">
+            <summary>Next cameras</summary>
+            <div id="predict-out" class="predict-out"><p class="empty">Press Next cameras to rank likely next sightings.</p></div>
+          </details>
+        </div>
+        <div class="split track-split">
+          <div class="card map-card"><div id="track-map" class="map" aria-label="Vehicle track map"></div></div>
+          <div class="card flush">
+            <div class="card-head pad"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-clock"/></svg>Sightings timeline</h3></div>
+            <div class="table-wrap"><table id="track-table"></table></div>
+          </div>
+        </div>
       </section>
+
+      <!-- ALERTS -->
       <section id="panel-alerts" class="panel" role="tabpanel" aria-labelledby="tab-alerts">
-        <h2>Alerts</h2>
-        <p id="alert-empty" class="empty">No open alerts</p>
-        <div class="table-wrap" id="alert-list"></div>
+        <div class="page-head">
+          <div>
+            <h2>Alerts</h2>
+            <p class="sub">Watchlist matches. Repeat sightings within two minutes fold into a counter. Every acknowledgement is audited.</p>
+          </div>
+          <div id="alert-summary" class="summary-pills"></div>
+        </div>
+        <div class="card flush">
+          <p id="alert-empty" class="empty-state"><svg class="ic lg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-check"/></svg><span>No open alerts</span></p>
+          <div class="table-wrap" id="alert-list"></div>
+        </div>
+        <div class="page-head secondary">
+          <div>
+            <h3 class="section-title">Detection history</h3>
+            <p class="sub">Every detection row, newest first. Raw OCR sits beside the accepted plate so rejected readings stay visible as evidence.</p>
+          </div>
+          <label class="search" for="det-search"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Filter detections</span>
+            <input id="det-search" type="search" placeholder="Filter plate, camera, source">
+          </label>
+        </div>
+        <div class="card flush"><div class="table-wrap"><table id="det-table"></table></div></div>
       </section>
+
+      <!-- WATCHLIST -->
       <section id="panel-watchlist" class="panel" role="tabpanel" aria-labelledby="tab-watchlist">
-        <h2>Watchlist</h2>
-        <p>Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted. Person rows use an enrolled gallery, not a live ministry pipe.</p>
-        <div class="table-wrap"><table id="wl-table"></table></div>
-        <form id="wl-form" class="form-grid">
-          <label class="field" for="wl-id">Case ID
-            <input id="wl-id" name="source_case_id" placeholder="WL-006" required>
-          </label>
-          <label class="field" for="wl-type">Entity type
-            <input id="wl-type" name="entity_type" placeholder="vehicle" value="vehicle">
-          </label>
-          <label class="field" for="wl-plate">Plate
-            <input id="wl-plate" name="plate" placeholder="GJ01AB1234">
-          </label>
-          <label class="field" for="wl-name">Name
-            <input id="wl-name" name="name" placeholder="name">
-          </label>
-          <label class="field" for="wl-gallery">Gallery ID
-            <input id="wl-gallery" name="gallery_id" placeholder="WL-004">
-          </label>
-          <label class="field" for="wl-cat">Category
-            <input id="wl-cat" name="category" placeholder="STOLEN">
-          </label>
-          <label class="field" for="wl-pri">Priority
-            <input id="wl-pri" name="priority" placeholder="HIGH" value="HIGH">
-          </label>
-          <button type="submit">Save</button>
-        </form>
-        <h3>Enroll Missing/Wanted Person</h3>
-        <p class="hint">Posts /api/faces/enroll. Consented adult photos only. Own-camera gallery, not Paldi Circle.</p>
-        <form id="enroll-person-form" class="form-grid">
-          <label class="field" for="enroll-gallery">Gallery ID
-            <input id="enroll-gallery" name="gallery_id" value="WL-004" required>
-          </label>
-          <label class="field" for="enroll-camera">Camera ID
-            <input id="enroll-camera" name="camera_id" value="CAM-OWN-001" required>
-          </label>
-          <label class="field" for="enroll-name">Name
-            <input id="enroll-name" name="name" placeholder="name">
-          </label>
-          <label class="field wide" for="enroll-file">Photo
-            <input id="enroll-file" type="file" name="file" accept="image/*" required>
-          </label>
-          <button type="submit">Enroll</button>
-        </form>
-        <div id="enroll-out" class="result-card"></div>
+        <div class="page-head">
+          <div>
+            <h2>Watchlist</h2>
+            <p class="sub">Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted. Person rows use an enrolled gallery, not a live ministry pipe.</p>
+          </div>
+        </div>
+        <div class="card flush"><div class="table-wrap"><table id="wl-table"></table></div></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-plus"/></svg>Add watchlist entry</h3></div>
+            <form id="wl-form" class="form-grid">
+              <label class="field" for="wl-id">Case ID
+                <input id="wl-id" name="source_case_id" placeholder="WL-006" required>
+              </label>
+              <label class="field" for="wl-type">Entity type
+                <input id="wl-type" name="entity_type" placeholder="vehicle" value="vehicle">
+              </label>
+              <label class="field" for="wl-plate">Plate
+                <input id="wl-plate" name="plate" placeholder="GJ01AB1234">
+              </label>
+              <label class="field" for="wl-name">Name
+                <input id="wl-name" name="name" placeholder="name">
+              </label>
+              <label class="field" for="wl-gallery">Gallery ID
+                <input id="wl-gallery" name="gallery_id" placeholder="WL-004">
+              </label>
+              <label class="field" for="wl-cat">Category
+                <input id="wl-cat" name="category" placeholder="STOLEN">
+              </label>
+              <label class="field" for="wl-pri">Priority
+                <input id="wl-pri" name="priority" placeholder="HIGH" value="HIGH">
+              </label>
+              <div class="form-actions"><button type="submit" class="primary">Save</button></div>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-user"/></svg>Enroll Missing/Wanted Person</h3></div>
+            <p class="hint">Posts /api/faces/enroll. Consented adult photos only. Own-camera gallery, not Paldi Circle.</p>
+            <form id="enroll-person-form" class="form-grid">
+              <label class="field" for="enroll-gallery">Gallery ID
+                <input id="enroll-gallery" name="gallery_id" value="WL-004" required>
+              </label>
+              <label class="field" for="enroll-camera">Camera ID
+                <input id="enroll-camera" name="camera_id" value="CAM-OWN-001" required>
+              </label>
+              <label class="field" for="enroll-name">Name
+                <input id="enroll-name" name="name" placeholder="name">
+              </label>
+              <label class="field wide" for="enroll-file">Photo
+                <input id="enroll-file" type="file" name="file" accept="image/*" required>
+              </label>
+              <div class="form-actions"><button type="submit" class="primary">Enroll</button></div>
+            </form>
+            <div id="enroll-out" class="result-card"></div>
+          </div>
+        </div>
       </section>
+
+      <!-- ONBOARD -->
       <section id="panel-onboard" class="panel" role="tabpanel" aria-labelledby="tab-onboard">
-        <h2>Onboard</h2>
-        <form id="onboard-form" class="form-grid">
-          <label class="field" for="ob-id">Camera ID
-            <input id="ob-id" name="camera_id" placeholder="CAM-OWN-002" required>
-          </label>
-          <label class="field" for="ob-dept">Department
-            <input id="ob-dept" name="department" placeholder="Home" value="Home">
-          </label>
-          <label class="field" for="ob-own">Ownership
-            <input id="ob-own" name="ownership" placeholder="Gov" value="Gov">
-          </label>
-          <label class="field" for="ob-loc">Location
-            <input id="ob-loc" name="location" placeholder="location">
-          </label>
-          <label class="field" for="ob-lat">Latitude
-            <input id="ob-lat" name="lat" placeholder="23.02" value="23.02">
-          </label>
-          <label class="field" for="ob-lon">Longitude
-            <input id="ob-lon" name="lon" placeholder="72.57" value="72.57">
-          </label>
-          <label class="field" for="ob-proto">Protocol
-            <input id="ob-proto" name="protocol" placeholder="file" value="file">
-          </label>
-          <label class="field" for="ob-url">URL
-            <input id="ob-url" name="url" placeholder="url">
-          </label>
-          <label class="wide" for="ob-consent"><input id="ob-consent" type="checkbox" name="consent" checked> consent</label>
-          <button type="submit">Add camera</button>
-        </form>
-        <h3>CSV import</h3>
-        <label class="field" for="csv-file">Camera CSV
-          <input type="file" id="csv-file" accept=".csv">
-        </label>
-        <h3>ANPR this still</h3>
-        <label class="field" for="anpr-file">Still
-          <input type="file" id="anpr-file" accept="image/*">
-        </label>
-        <label class="field" for="anpr-cam">Camera ID
-          <input id="anpr-cam" value="CAM-OWN-001">
-        </label>
-        <div id="anpr-out" class="result-card"></div>
-        <h3>Analyse this still</h3>
-        <p class="hint">Plates, objects, and (Own cameras only) enrolled-gallery faces. Government cameras never run FRS.</p>
-        <label class="field" for="analyse-file">Still
-          <input type="file" id="analyse-file" accept="image/*">
-        </label>
-        <label class="field" for="analyse-cam">Camera ID
-          <input id="analyse-cam" value="CAM-OWN-001">
-        </label>
-        <div id="analyse-out" class="result-card"></div>
-        <h3>Operator confirm</h3>
-        <form id="confirm-form" class="toolbar">
-          <label class="field" for="confirm-cam">Camera ID
-            <input id="confirm-cam" name="camera_id" value="CAM-OWN-001">
-          </label>
-          <label class="field" for="confirm-plate">Plate
-            <input id="confirm-plate" name="plate" value="GJ01AB1234" placeholder="GJ01AB1234">
-          </label>
-          <button type="submit">Confirm plate</button>
-        </form>
-        <form id="confirm-face-form" class="toolbar">
-          <label class="field" for="confirm-face-cam">Camera ID
-            <input id="confirm-face-cam" name="camera_id" value="CAM-OWN-001">
-          </label>
-          <label class="field" for="confirm-gallery">Gallery ID
-            <input id="confirm-gallery" name="gallery_id" value="WL-004">
-          </label>
-          <button type="submit">Confirm face</button>
-        </form>
+        <div class="page-head">
+          <div>
+            <h2>Onboard</h2>
+            <p class="sub">Register cameras, and run recognition on a still frame from any registered camera.</p>
+          </div>
+        </div>
+        <div class="grid-onboard">
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-camera"/></svg>Add camera</h3></div>
+              <form id="onboard-form" class="form-grid">
+                <label class="field" for="ob-id">Camera ID
+                  <input id="ob-id" name="camera_id" placeholder="CAM-OWN-002" required>
+                </label>
+                <label class="field" for="ob-dept">Department
+                  <input id="ob-dept" name="department" placeholder="Home" value="Home">
+                </label>
+                <label class="field" for="ob-own">Ownership
+                  <input id="ob-own" name="ownership" placeholder="Gov" value="Gov">
+                </label>
+                <label class="field" for="ob-loc">Location
+                  <input id="ob-loc" name="location" placeholder="location">
+                </label>
+                <label class="field" for="ob-lat">Latitude
+                  <input id="ob-lat" name="lat" placeholder="23.02" value="23.02">
+                </label>
+                <label class="field" for="ob-lon">Longitude
+                  <input id="ob-lon" name="lon" placeholder="72.57" value="72.57">
+                </label>
+                <label class="field" for="ob-proto">Protocol
+                  <input id="ob-proto" name="protocol" placeholder="file" value="file">
+                </label>
+                <label class="field" for="ob-url">URL
+                  <input id="ob-url" name="url" placeholder="url">
+                </label>
+                <label class="wide check" for="ob-consent"><input id="ob-consent" type="checkbox" name="consent" checked> consent</label>
+                <div class="form-actions"><button type="submit" class="primary">Add camera</button></div>
+              </form>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-upload"/></svg>CSV import</h3></div>
+              <label class="field" for="csv-file">Camera CSV
+                <input type="file" id="csv-file" accept=".csv">
+              </label>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-check"/></svg>Operator confirm</h3></div>
+              <p class="hint">A human writing a real detection row at confidence 1.0. It is not automatic plate recognition and is labelled as such.</p>
+              <form id="confirm-form" class="toolbar">
+                <label class="field" for="confirm-cam">Camera ID
+                  <input id="confirm-cam" name="camera_id" value="CAM-OWN-001">
+                </label>
+                <label class="field" for="confirm-plate">Plate
+                  <input id="confirm-plate" name="plate" class="plate-input" value="GJ01AB1234" placeholder="GJ01AB1234">
+                </label>
+                <button type="submit" class="primary">Confirm plate</button>
+              </form>
+              <form id="confirm-face-form" class="toolbar">
+                <label class="field" for="confirm-face-cam">Camera ID
+                  <input id="confirm-face-cam" name="camera_id" value="CAM-OWN-001">
+                </label>
+                <label class="field" for="confirm-gallery">Gallery ID
+                  <input id="confirm-gallery" name="gallery_id" value="WL-004">
+                </label>
+                <button type="submit">Confirm face</button>
+              </form>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card recog">
+              <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-scan"/></svg>ANPR this still</h3><span class="pill neutral">Plate recognition</span></div>
+              <div class="recog-controls">
+                <label class="dropzone" for="anpr-file" data-drop="anpr-file">
+                  <svg class="ic lg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-upload"/></svg>
+                  <span><strong>Still</strong> · drop an image or click to choose</span>
+                  <input type="file" id="anpr-file" accept="image/*">
+                </label>
+                <label class="field" for="anpr-cam">Camera ID
+                  <input id="anpr-cam" value="CAM-OWN-001">
+                </label>
+              </div>
+              <div id="anpr-out" class="result-card"></div>
+            </div>
+            <div class="card recog">
+              <div class="card-head"><h3><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-grid"/></svg>Analyse this still</h3><span class="pill neutral">Plates · objects · faces</span></div>
+              <p class="hint">Plates, objects, and (Own cameras only) enrolled-gallery faces. Government cameras never run FRS.</p>
+              <div class="recog-controls">
+                <label class="dropzone" for="analyse-file" data-drop="analyse-file">
+                  <svg class="ic lg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-upload"/></svg>
+                  <span><strong>Still</strong> · drop an image or click to choose</span>
+                  <input type="file" id="analyse-file" accept="image/*">
+                </label>
+                <label class="field" for="analyse-cam">Camera ID
+                  <input id="analyse-cam" value="CAM-OWN-001">
+                </label>
+              </div>
+              <div id="analyse-out" class="result-card"></div>
+            </div>
+          </div>
+        </div>
       </section>
+
+      <!-- ANALYTICS & GAPS -->
       <section id="panel-gaps" class="panel" role="tabpanel" aria-labelledby="tab-gaps">
-        <h2>Analytics &amp; Gaps</h2>
-        <p><a id="object-csv-link" href="/api/objects/report.csv">Download object CSV</a></p>
-        <div id="entity-counts" class="result-card"></div>
-        <details>
-          <summary>Gap report</summary>
-          <pre id="gap-out"></pre>
-        </details>
+        <div class="page-head">
+          <div>
+            <h2>Analytics &amp; Gaps</h2>
+            <p class="sub">Coverage census: where the grid is blind, short on retention, or missing consent.</p>
+          </div>
+          <a id="object-csv-link" class="btn" href="/api/objects/report.csv"><svg class="ic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><use href="#i-download"/></svg>Download object CSV</a>
+        </div>
+        <div id="gap-kpis" class="kpis"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-head"><h3>Cameras by department</h3></div>
+            <div id="chart-dept" class="bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Camera health</h3></div>
+            <div id="chart-health" class="bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Detections by entity type</h3></div>
+            <div id="entity-counts" class="result-card plain"></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card flush">
+            <div class="card-head pad"><h3>Gap register</h3></div>
+            <div class="table-wrap"><table id="gap-table"></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Gap report</h3></div>
+            <details open>
+              <summary>Gap report</summary>
+              <pre id="gap-out"></pre>
+            </details>
+          </div>
+        </div>
       </section>
     </main>
     <footer>
@@ -222,8 +425,9 @@
       <span id="footer-health"></span>
     </footer>
   </div>
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/hls.min.js"></script>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=3"></script>
 </body>
 </html>

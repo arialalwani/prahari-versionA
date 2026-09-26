@@ -1,0 +1,557 @@
+<title>PRAHARI Demo Run-Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #f4f6f8;
+    --surface: #ffffff;
+    --surface-sunk: #eceff3;
+    --ink: #171c23;
+    --ink-soft: #414c59;
+    --ink-mute: #6b7684;
+    --rule: #d8dee6;
+    --rule-soft: #e6eaf0;
+    --accent: #2f5d8f;
+    --accent-soft: #e4ecf5;
+    --critical: #8a4038;
+    --critical-soft: #f6e8e6;
+    --caution: #8a6212;
+    --caution-soft: #f8f0dc;
+    --ok: #1b7f4e;
+    --ok-soft: #e2f1e9;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --measure: 68ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10141a;
+      --surface: #171c23;
+      --surface-sunk: #1e242d;
+      --ink: #e4e8ee;
+      --ink-soft: #b3bcc8;
+      --ink-mute: #838f9d;
+      --rule: #2b333e;
+      --rule-soft: #232a33;
+      --accent: #7ba9d8;
+      --accent-soft: #1c2836;
+      --critical: #dd8b80;
+      --critical-soft: #2e1e1c;
+      --caution: #d9ac54;
+      --caution-soft: #2b2314;
+      --ok: #62b98c;
+      --ok-soft: #14271e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10141a;
+    --surface: #171c23;
+    --surface-sunk: #1e242d;
+    --ink: #e4e8ee;
+    --ink-soft: #b3bcc8;
+    --ink-mute: #838f9d;
+    --rule: #2b333e;
+    --rule-soft: #232a33;
+    --accent: #7ba9d8;
+    --accent-soft: #1c2836;
+    --critical: #dd8b80;
+    --critical-soft: #2e1e1c;
+    --caution: #d9ac54;
+    --caution-soft: #2b2314;
+    --ok: #62b98c;
+    --ok-soft: #14271e;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 980px; margin: 0 auto; padding: 40px 24px 96px; }
+
+  /* ---- masthead ---- */
+  .masthead {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 32px;
+    padding-bottom: 20px; border-bottom: 2px solid var(--ink);
+  }
+  .masthead h1 {
+    font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0;
+    font-weight: 600; letter-spacing: -0.02em; text-wrap: balance;
+  }
+  .masthead h1 .lede { display: block; font-family: var(--mono); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .verified {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-mute);
+    margin-left: auto; text-align: right; line-height: 1.5;
+  }
+  .verified strong { color: var(--ok); font-weight: 600; }
+
+  /* ---- generic type ---- */
+  h2 {
+    font-size: 13px; font-family: var(--mono); font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+    margin: 56px 0 18px; padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+  }
+  h3 { font-size: 19px; font-weight: 600; margin: 34px 0 10px; letter-spacing: -0.01em; text-wrap: balance; }
+  p { margin: 0 0 14px; max-width: var(--measure); }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; max-width: var(--measure); }
+  li { margin-bottom: 7px; }
+  a { color: var(--accent); }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--surface-sunk); padding: 1px 5px; border-radius: 3px;
+    border: 1px solid var(--rule-soft);
+  }
+  .cmd {
+    font-family: var(--mono); font-size: 13px; background: var(--surface-sunk);
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 10px 14px; margin: 0 0 14px; overflow-x: auto; white-space: pre;
+    color: var(--ink);
+  }
+
+  /* ---- intro note ---- */
+  .note {
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 20px 24px; margin: 28px 0 0;
+  }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* ---- tables ---- */
+  .tbl-wrap { overflow-x: auto; margin: 0 0 20px; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th {
+    text-align: left; font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute);
+    padding: 10px 14px; border-bottom: 1px solid var(--rule); white-space: nowrap;
+    background: var(--surface-sunk);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-mute); width: 2.5em; }
+  .tbl-wrap.compact td, .tbl-wrap.compact th { padding: 8px 12px; }
+
+  /* ---- the run-sheet rail ---- */
+  .beat {
+    display: grid; grid-template-columns: 88px 1fr; gap: 0 24px;
+    padding: 26px 0; border-top: 1px solid var(--rule);
+  }
+  .beat:first-of-type { border-top: 2px solid var(--ink); }
+  .tc {
+    font-family: var(--mono); font-size: 20px; font-weight: 600;
+    font-variant-numeric: tabular-nums; color: var(--accent);
+    letter-spacing: -0.02em; padding-top: 1px;
+  }
+  .tc span { display: block; font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
+  .beat-body > *:last-child { margin-bottom: 0; }
+  .beat h3 { margin-top: 0; }
+
+  /* ---- say / must-see / avoid ---- */
+  .say {
+    font-size: 17px; line-height: 1.5; color: var(--ink);
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 14px 18px; margin: 0 0 14px; max-width: var(--measure);
+  }
+  .say::before {
+    content: "SAY"; display: block; font-family: var(--mono); font-size: 10px;
+    font-weight: 600; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 6px;
+  }
+  .flag {
+    display: grid; grid-template-columns: auto 1fr; gap: 10px;
+    padding: 10px 14px; margin: 0 0 12px; max-width: var(--measure);
+    border: 1px solid var(--rule); background: var(--surface);
+  }
+  .flag .tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; padding-top: 4px; white-space: nowrap;
+  }
+  .flag p { margin: 0; }
+  .flag.see { border-left: 3px solid var(--ok); background: var(--ok-soft); }
+  .flag.see .tag { color: var(--ok); }
+  .flag.avoid { border-left: 3px solid var(--critical); background: var(--critical-soft); }
+  .flag.avoid .tag { color: var(--critical); }
+  .flag.watch { border-left: 3px solid var(--caution); background: var(--caution-soft); }
+  .flag.watch .tag { color: var(--caution); }
+
+  /* ---- pills ---- */
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px;
+    border: 1px solid currentColor; border-radius: 2px; vertical-align: 2px;
+  }
+  .pill.core { color: var(--ok); }
+  .pill.ext { color: var(--accent); }
+  .pill.no { color: var(--critical); }
+  .pill.verbal { color: var(--ink-mute); }
+
+  /* ---- prep steps ---- */
+  .steps { counter-reset: step; list-style: none; padding: 0; max-width: none; }
+  .steps > li {
+    counter-increment: step; display: grid; grid-template-columns: 34px 1fr; gap: 0 18px;
+    padding: 20px 0; border-top: 1px solid var(--rule-soft); margin: 0;
+  }
+  .steps > li::before {
+    content: counter(step); font-family: var(--mono); font-size: 15px; font-weight: 600;
+    color: var(--ink-mute); font-variant-numeric: tabular-nums; padding-top: 2px;
+  }
+  .steps > li > *:last-child { margin-bottom: 0; }
+  .steps h3 { margin-top: 0; font-size: 17px; }
+
+  /* ---- closing claims ---- */
+  .claims { list-style: none; padding: 0; max-width: none; counter-reset: claim; }
+  .claims li {
+    counter-increment: claim; display: grid; grid-template-columns: 30px 1fr; gap: 0 16px;
+    padding: 16px 0; border-top: 1px solid var(--rule); font-size: 17px; line-height: 1.5;
+  }
+  .claims li::before {
+    content: counter(claim); font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--accent); padding-top: 6px;
+  }
+
+  footer {
+    margin-top: 64px; padding-top: 18px; border-top: 2px solid var(--ink);
+    font-family: var(--mono); font-size: 12px; color: var(--ink-mute);
+    display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between;
+  }
+
+  @media (max-width: 620px) {
+    .beat { grid-template-columns: 1fr; gap: 8px; }
+    .tc span { display: inline; margin-left: 10px; }
+    .verified { margin-left: 0; text-align: left; }
+  }
+  @media print {
+    body { background: #fff; }
+    .beat, .steps > li { break-inside: avoid; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <h1><span class="lede">Gujarat Police Innovation Challenge 2026</span>PRAHARI demo run-sheet</h1>
+    <p class="verified">Every beat below was executed<br>against the running app.<br><strong>Verified 2026-09-05</strong></p>
+  </header>
+
+  <div class="note">
+    <p><strong>Read this first.</strong> Five things in the earlier draft do not match the app as it stands. Two of them will visibly break the take, and one is a thirty-second sequence the draft leaves out entirely — the strongest thirty seconds you have.</p>
+    <p style="margin-bottom:0">Numbers marked <em>pristine</em> assume you run the database reset in Part&nbsp;0. Without it they drift, because operator-confirms append permanently.</p>
+  </div>
+
+  <h2>Corrections</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:38%">Earlier draft</th><th>Actually true</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>“Four <code>PASS</code> lines”</td>
+          <td><strong>Five.</strong> <code>health 200</code>, <code>detections&gt;=6</code>, <code>cameras&gt;=11</code>, <code>WL-001 present</code>, <code>UI PRAHARI</code> — then a final line that is exactly <code>PASS</code>.</td>
+        </tr>
+        <tr>
+          <td>“Click any pin, then Open tile”</td>
+          <td><code>CAM-OWN-001</code> has coordinates <code>0,0</code>, so it has <strong>no map pin</strong> — and it is the only camera that plays. Open it from the <strong>Cameras tab table</strong>.</td>
+        </tr>
+        <tr>
+          <td>Analyse a still from <code>own_stills</code></td>
+          <td>Those stills return <strong>zero events</strong> — an empty box on camera. Use <code>data/faces/WL-004/a.png</code> instead: a real face match at <strong>0.92</strong>, plus the government-camera refusal shown side by side.</td>
+        </tr>
+        <tr>
+          <td>“Six rows” in Vehicle Track</td>
+          <td>Six <em>pristine</em>. It is <strong>7</strong> right now — earlier operator-confirms appended real rows. Read the count off the screen instead of reciting one.</td>
+        </tr>
+        <tr>
+          <td>The tripwire lives in <code>preflight_demo.ps1</code></td>
+          <td>It lives in <code>scripts/_env_helpers.ps1</code>, thrown by <code>Get-JudgeBasicHeader</code>. <strong>Already satisfied</strong> — your <code>.env</code> no longer holds the example value.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flag avoid">
+    <span class="tag">Avoid</span>
+    <p><strong>Do not press “Next cameras.”</strong> It reports <em>“geographically close (8224.5 km)”</em>, because the last detection sits on <code>CAM-OWN-001</code> at coordinates <code>0,0</code>. It reads as a broken feature.</p>
+  </div>
+  <div class="flag watch">
+    <span class="tag">Note</span>
+    <p>Verifying this script left rows behind: <strong>17 detections instead of 6</strong>, <code>WL-004</code> named <em>Rep Person</em> instead of <em>Ramesh K</em>, and 10 gallery images instead of 2. The Part&nbsp;0 reset undoes all of it.</p>
+  </div>
+
+  <h2>Part 0 · Before the server starts</h2>
+
+  <h3>Reset to pristine <span class="pill core">recommended</span></h3>
+  <p>Stop the server first, then delete the database. The next start reseeds from <code>03_Data/samples/</code>: eleven cameras, six detections, five watchlist rows, and six <code>CRITICAL</code> alerts rebuilt from those detections.</p>
+  <pre class="cmd">del data\prahari.db</pre>
+  <p>This also wipes the audit log and any watchlist row you added by hand. Nothing else is lost — cameras, watchlist and detections all return from the seed files.</p>
+
+  <h3>Trim the face gallery <span class="pill verbal">cosmetic</span></h3>
+  <p>Retried enrolments left eight extra images. Only worth doing if you plan to show the enrolment beat.</p>
+  <pre class="cmd">cd C:\Users\Admin\PRAHARI\02_Code\prahari\data\faces\WL-004
+del 3.jpg 4.jpg 5.jpg 6.jpg 7.jpg 8.jpg 9.jpg 10.jpg</pre>
+  <p><code>a.png</code> and <code>b.png</code> survive, and the app regenerates them if they ever go missing.</p>
+
+  <h3>Already done — no action</h3>
+  <ul>
+    <li><strong><code>JUDGE_PASSWORD</code></strong> is set to a real value. The preflight tripwire is satisfied.</li>
+    <li><strong><code>own_feed.mp4</code></strong> exists — 6.1&nbsp;MB, verified serving as <code>video/mp4</code> over HTTP 200.</li>
+    <li><strong>Port 8080</strong> now holds the correct build. It previously held an old copy from <code>PRAHARI-3.0</code>, which is why the enrolment box stayed empty.</li>
+  </ul>
+
+  <h2>Part 1 · Set the stage · recorder off</h2>
+  <ol class="steps">
+    <li>
+      <h3>Clear the screen</h3>
+      <p>Quit Slack, mail, Telegram. Close any window showing <code>.env</code> or an <code>rtsp://</code> URL. Maximise the browser — below about 1280px the map and video wall stack instead of sitting side by side.</p>
+    </li>
+    <li>
+      <h3>Start the server</h3>
+      <pre class="cmd">cd C:\Users\Admin\PRAHARI\02_Code\prahari
+.\run.ps1</pre>
+      <div class="flag see"><span class="tag">Must see</span><p>A line ending <code>Uvicorn running on http://127.0.0.1:8080</code>. Leave this window open for the whole demo.</p></div>
+      <p>If you see <code>error while attempting to bind</code>, something else holds 8080. Run <code>Get-NetTCPConnection -LocalPort 8080 -State Listen</code> and stop it — this has already happened once on this machine.</p>
+    </li>
+    <li>
+      <h3>Preflight — the go/no-go gate</h3>
+      <p>Second PowerShell window; the first is busy running the server.</p>
+      <pre class="cmd">cd C:\Users\Admin\PRAHARI\02_Code\prahari
+.\scripts\preflight_demo.ps1</pre>
+      <div class="flag see"><span class="tag">Must see</span><p>Five <code>PASS</code> lines, then a final line that is exactly <code>PASS</code>. If the last line is <code>FAIL</code>, do not record.</p></div>
+    </li>
+    <li>
+      <h3>Sign in</h3>
+      <p>Go to <code>http://127.0.0.1:8080</code> and press <strong>Ctrl+Shift+R</strong> once. The user is prefilled as <code>judge</code>; type the password you set.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>Seven tabs, and a header strip reading <code>ok · 11 cameras · 6 detections · WS connected</code>.</p></div>
+    </li>
+    <li>
+      <h3>Open the one tile that plays</h3>
+      <p>Go to <strong>Cameras</strong>, find <code>CAM-OWN-001</code> in the table, click <strong>Open</strong>. The clip appears in the Operations video wall. Leave it playing.</p>
+      <p>Do this off camera. <code>CAM-OWN-001</code> is not on the map, and hunting for it live costs fifteen seconds of your budget.</p>
+    </li>
+    <li>
+      <h3>Enrol the two photos <span class="pill verbal">optional</span></h3>
+      <p>Watchlist → <em>Enroll Missing/Wanted Person</em>. Gallery ID <code>WL-004</code> and Camera ID <code>CAM-OWN-001</code> are prefilled. Under Photo choose <code>a.png</code> from <code>data\faces\WL-004</code>, click <strong>Enroll</strong>, then repeat with <code>b.png</code>.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>The box below the form reads <code>Enrolled 1 image(s) into gallery WL-004.</code></p></div>
+      <p>These are <code>.png</code> files in the app’s own data folder — not <code>03_Data</code>, and not <code>.jpg</code>. Click Enroll exactly once per photo; every click appends another copy permanently and nothing on screen shows the running total. Skipping this step costs you nothing.</p>
+    </li>
+  </ol>
+
+  <h2>Part 2 · The take · 3:00 hard cap</h2>
+  <p>Press <strong>Win+G</strong> and record the browser only. The times are a budget, not a countdown. If you drift, take it out of Vehicle Track — it has the most slack.</p>
+
+  <div class="beat">
+    <div class="tc">0:00<span>Open</span></div>
+    <div class="beat-body">
+      <h3>Operations — the map</h3>
+      <p>Click <strong>Operations</strong>. Gujarat fills the left, video wall on the right with <code>CAM-OWN-001</code> already playing.</p>
+      <p class="say">This is PRAHARI, a hybrid intelligence plane. Departments keep their own video management systems — we sit above them and correlate.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>Pins on a drawn map. A blank grey rectangle means the OpenStreetMap tiles did not load — stop and restart the take.</p></div>
+      <p>Ten pins, not eleven. The eleventh camera is the own-feed clip, which has no coordinates.</p>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">0:15<span>Registry</span></div>
+    <div class="beat-body">
+      <h3>Coverage, and its gaps</h3>
+      <p>Click the <strong>Dahod</strong> pin, east of the state. Its health reads <code>offline</code>.</p>
+      <p class="say">This is the camera registry — eleven cameras across Home, GSRTC, RTO, Food and Civil Supplies, and one permitted private mall. Dahod is offline on purpose. We show the gaps, not just the coverage.</p>
+      <p>Click <strong>Cameras</strong>. Point at the department filter chips, then at the health dots in the table.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>Eleven rows with coloured health dots, and filter chips reading All / Home / GSRTC / RTO / Food &amp; Civil Supplies / Private / Own.</p></div>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">0:40<span>Track</span></div>
+    <div class="beat-body">
+      <h3>Rebuild the journey</h3>
+      <p>Click <strong>Vehicle Track</strong>. The plate box already holds <code>GJ01AB1234</code>. Click <strong>Reconstruct</strong>.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>A line drawn across the map and six rows <em>(pristine)</em> — Valsad, Surat, two in Ahmedabad, two in Gandhinagar. The line under the toolbar reads <code>6 points · STOLEN</code>. Read that number rather than reciting one.</p></div>
+      <p class="say">A designated vehicle, reconstructed from Valsad to Gandhinagar across six cameras and four hours. Live hits append to this same track.</p>
+      <p>Click <strong>Download CSV</strong>. Chrome shows the download bar — keep that file, it is a submission deliverable.</p>
+      <div class="flag avoid"><span class="tag">Avoid</span><p>Do not press <em>Next cameras</em>.</p></div>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">1:05<span>Alerts</span></div>
+    <div class="beat-body">
+      <h3>Priority and deduplication</h3>
+      <div class="flag see"><span class="tag">Must see</span><p>Six red <code>CRITICAL</code> cards for <code>GJ01AB1234</code>, sorted above everything else. Never the <em>No open alerts</em> message.</p></div>
+      <p class="say">A stolen plate raises CRITICAL automatically, one alert per camera. Repeat sightings inside two minutes fold into a counter instead of spamming the operator — that’s the times-N you see on the card. Every one of these has an Acknowledge button and an audit row behind it.</p>
+      <p>Click <strong>Watchlist</strong> and point at <code>WL-001</code>.</p>
+      <p class="say">A representative VAHAN and eGujCop-style watchlist, not a live ministry feed. WL-001 is the entry that fired those alerts, and it cannot be deleted.</p>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">1:30<span>Compliance</span></div>
+    <div class="beat-body">
+      <h3>The same face, two cameras</h3>
+      <p>The most important thirty seconds in the take. Click <strong>Onboard</strong>, scroll to <strong>Analyse this still</strong>. Leave Camera ID as <code>CAM-OWN-001</code> and choose <code>a.png</code> from <code>data\faces\WL-004</code>.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>A result table with a row reading <code>person · WL-004 · faces · 0.92</code>, alongside three <code>object · person · objects · 0.5</code> rows.</p></div>
+      <p class="say">That is our own camera. The enrolled-gallery face matcher runs, finds WL-004, and raises a HIGH alert.</p>
+      <p>Now change Camera ID to <code>CAM-AHD-001</code> — a government camera — and choose <strong>the same file</strong> again.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>Object rows only. No <code>person</code> row, no <code>WL-004</code>, no gallery identity.</p></div>
+      <p class="say">Same photograph, government camera. The browser still asks for face matching; the server refuses it and logs the refusal. Objects yes, identity never. Face recognition runs on our own cameras only — enforced server-side, not by hiding a button.</p>
+      <p>This is the claim judges actually test. You are demonstrating it rather than asserting it.</p>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">2:05<span>Confirm</span></div>
+    <div class="beat-body">
+      <h3>The human in the loop</h3>
+      <p>Still on Onboard, scroll to <strong>Operator confirm</strong>. Camera reads <code>CAM-OWN-001</code>, plate reads <code>GJ01AB1234</code>. Click <strong>Confirm plate</strong>.</p>
+      <p class="say">An operator confirm — a human writing a real detection row at confidence one. It is not automatic plate recognition and we do not label it as one.</p>
+      <div class="flag avoid"><span class="tag">Skip</span><p>The <strong>ANPR this still</strong> box above it. Tesseract is genuinely not installed on this machine; it returns an empty result and burns twenty seconds showing nothing.</p></div>
+      <p>If you have five spare seconds, return to Vehicle Track and press <strong>Reconstruct</strong> — the track is now seven rows, proving the “live hits append” line you delivered at 0:40.</p>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">2:25<span>Close</span></div>
+    <div class="beat-body">
+      <h3>Analytics &amp; Gaps — and the footer</h3>
+      <p>Click <strong>Analytics &amp; Gaps</strong>, expand <strong>Gap report</strong>.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>JSON listing <code>offline: ["CAM-GSRTC-DAHOD"]</code>, a <code>short_retention</code> array of eight cameras at seven days, plus <code>missing_coords</code>, <code>private_without_consent</code> and <code>counts_by_department</code>.</p></div>
+      <p class="say">The gap report is a procurement document. Dahod offline, eight cameras holding only seven days of footage, and any permitted-private camera missing a consent flag.</p>
+      <p>Scroll so the grey footer bar is fully in frame. Hold it while you deliver the last line.</p>
+      <p class="say">Eighty thousand cameras is a design target, and it is labelled as one on screen. We sample one frame per second at the region. The measured limit on this laptop is four open tiles — and we show you that number rather than hide it.</p>
+      <div class="flag see"><span class="tag">Must see</span><p>The footer sentence legible on camera.</p></div>
+    </div>
+  </div>
+
+  <div class="beat">
+    <div class="tc">3:00<span>Cut</span></div>
+    <div class="beat-body">
+      <h3>Stop and save</h3>
+      <pre class="cmd">C:\Users\Admin\PRAHARI\05_Output\deliverables\own_feed_demo.mp4</pre>
+      <p>Watch it back once at speed, checking one thing only: no password, no <code>.env</code> window, and no <code>rtsp://</code> address in any frame.</p>
+    </div>
+  </div>
+
+  <h2>Part 3 · The extended cut · 5:00</h2>
+  <p>If the submission allows five minutes, keep everything above and insert these. Each is verified working.</p>
+
+  <h3>A · The four-tile cap, demonstrated <span class="pill ext">+25s after 0:15</span></h3>
+  <p>On <strong>Cameras</strong>, click <strong>Open</strong> on four different rows, then a fifth.</p>
+  <div class="flag see"><span class="tag">Must see</span><p><code>Fifth live session rejected. Close a tile first.</code> in red above the wall. The server returns HTTP 429 with <code>MAX_OPEN_CAPTURES=4 reached.</code></p></div>
+  <p class="say">The four-tile cap is not a slide. It is a real limit, measured on this hardware, and the fifth request is refused.</p>
+  <div class="flag watch"><span class="tag">Cost</span><p>The three government tiles will be black rectangles — their RTSP sources are unreachable from this laptop. Only show this if you will say so out loud: <em>“three of these have no reachable source from this laptop, which is exactly what the registry health column is telling you.”</em></p></div>
+
+  <h3>B · Confirm face — a person alert, created live <span class="pill ext">+20s after 2:05</span></h3>
+  <p>Onboard → <strong>Confirm face</strong>, below Operator confirm. Camera <code>CAM-OWN-001</code>, Gallery <code>WL-004</code>. Click it, then switch to Alerts.</p>
+  <div class="flag see"><span class="tag">Must see</span><p>A new <code>HIGH</code> card, entity <code>WL-004</code>, category <code>MISSING_ASSOCIATE</code>.</p></div>
+  <p class="say">The same human-in-the-loop path for a missing person. Gallery WL-004, our own camera. The server rejects this outright on a government camera.</p>
+
+  <h3>C · Camera onboarding <span class="pill ext">+30s</span></h3>
+  <p>Onboard → top form. Camera ID <code>CAM-OWN-002</code>, leave the rest, note the <strong>consent</strong> checkbox, click <strong>Add camera</strong>. Return to Cameras — the row is there.</p>
+  <p class="say">Departments onboard cameras with ownership and a consent flag. Consent is a first-class field, and a permitted-private camera without it appears in the gap report.</p>
+
+  <h3>D · Deduplication counter, live <span class="pill ext">+15s</span></h3>
+  <p>Click <strong>Confirm plate</strong> twice within two minutes, then open Alerts.</p>
+  <div class="flag see"><span class="tag">Must see</span><p>One card, not two, with the counter reading <code>×2</code>.</p></div>
+  <p class="say">Two sightings, two minutes, one alert. The counter increments; the operator is not spammed.</p>
+
+  <h3>E · Acknowledge <span class="pill ext">+10s</span></h3>
+  <p>On any card click <strong>Ack</strong>. It leaves the open list.</p>
+
+  <h2>Every feature, and how to show it</h2>
+  <div class="tbl-wrap compact">
+    <table>
+      <thead><tr><th></th><th>Feature</th><th>Where</th><th>Shown by</th><th>In the take</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Camera registry — 11 cameras, 6 departments</td><td>Operations / Cameras</td><td>Pins and table</td><td><span class="pill core">0:00</span></td></tr>
+        <tr><td class="num">2</td><td>Health states: live / degraded / offline / unknown</td><td>Cameras</td><td>Dahod is <code>offline</code></td><td><span class="pill core">0:15</span></td></tr>
+        <tr><td class="num">3</td><td>Department filter chips</td><td>Cameras</td><td>Click a chip</td><td><span class="pill core">0:15</span></td></tr>
+        <tr><td class="num">4</td><td>Video wall with tokenised playback</td><td>Operations</td><td><code>CAM-OWN-001</code> tile</td><td><span class="pill core">pre-opened</span></td></tr>
+        <tr><td class="num">5</td><td>Four-tile session cap, HTTP 429</td><td>Operations</td><td>Open a fifth tile</td><td><span class="pill ext">Ext A</span></td></tr>
+        <tr><td class="num">6</td><td>Short-TTL stream tokens — the RTSP URL never reaches the browser</td><td>—</td><td>Say it over the tile</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">7</td><td>Vehicle track reconstruction</td><td>Vehicle Track</td><td>Reconstruct</td><td><span class="pill core">0:40</span></td></tr>
+        <tr><td class="num">8</td><td>Track CSV export, audited</td><td>Vehicle Track</td><td>Download CSV</td><td><span class="pill core">0:40</span></td></tr>
+        <tr><td class="num">9</td><td>Teleport / speed-plausibility flags above 180 km/h</td><td>Vehicle Track</td><td>Only fires on implausible data</td><td><span class="pill no">not in seed</span></td></tr>
+        <tr><td class="num">10</td><td>Next-camera prediction</td><td>Vehicle Track</td><td>Broken distances</td><td><span class="pill no">avoid</span></td></tr>
+        <tr><td class="num">11</td><td>Watchlist match raises an alert automatically</td><td>Alerts</td><td>Six CRITICAL cards</td><td><span class="pill core">1:05</span></td></tr>
+        <tr><td class="num">12</td><td>Priority ranking CRITICAL → HIGH → LOW</td><td>Alerts</td><td>Card order</td><td><span class="pill core">1:05</span></td></tr>
+        <tr><td class="num">13</td><td>120-second deduplication counter</td><td>Alerts</td><td><code>×N</code> on a card</td><td><span class="pill ext">Ext D</span></td></tr>
+        <tr><td class="num">14</td><td>Acknowledge</td><td>Alerts</td><td>Ack button</td><td><span class="pill ext">Ext E</span></td></tr>
+        <tr><td class="num">15</td><td>Live WebSocket alert push</td><td>Header</td><td><code>WS connected</code> chip</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">16</td><td><code>pending_review</code> for AI-reconstructed evidence</td><td>Alerts</td><td>Not reachable in this seed</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">17</td><td>Watchlist CRUD, WL-001 delete-protected</td><td>Watchlist</td><td>Point at WL-001</td><td><span class="pill core">1:05</span></td></tr>
+        <tr><td class="num">18</td><td>Face enrolment into a gallery</td><td>Watchlist</td><td>Enroll form</td><td><span class="pill core">prep</span></td></tr>
+        <tr><td class="num">19</td><td><strong>Enrolled-gallery face match on own cameras</strong></td><td>Onboard → Analyse</td><td><code>a.png</code> at 0.92</td><td><span class="pill core">1:30</span></td></tr>
+        <tr><td class="num">20</td><td><strong>Server-side FRS refusal on government cameras</strong></td><td>Onboard → Analyse</td><td>Same file, <code>CAM-AHD-001</code></td><td><span class="pill core">1:30</span></td></tr>
+        <tr><td class="num">21</td><td>Object detection — person, car, bus, truck, bike</td><td>Onboard → Analyse</td><td>Object rows at 0.5</td><td><span class="pill core">1:30</span></td></tr>
+        <tr><td class="num">22</td><td>Object track IDs</td><td>Analyse raw JSON</td><td><code>track_id: CAM-AHD-001-1</code></td><td><span class="pill verbal">expand raw</span></td></tr>
+        <tr><td class="num">23</td><td>Operator confirm — plate</td><td>Onboard</td><td>Confirm plate</td><td><span class="pill core">2:05</span></td></tr>
+        <tr><td class="num">24</td><td>Operator confirm — face, Own cameras only</td><td>Onboard</td><td>Confirm face</td><td><span class="pill ext">Ext B</span></td></tr>
+        <tr><td class="num">25</td><td>Camera onboarding with a consent flag</td><td>Onboard</td><td>Add camera</td><td><span class="pill ext">Ext C</span></td></tr>
+        <tr><td class="num">26</td><td>Camera CSV import</td><td>Onboard</td><td>File picker</td><td><span class="pill no">too slow</span></td></tr>
+        <tr><td class="num">27</td><td>Intrusion detection, person-in-ROI</td><td><code>CAM-FCS-001</code> godown</td><td>Needs an ROI-configured frame</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">28</td><td>Entity-type counts</td><td>Analytics &amp; Gaps</td><td>Counts table</td><td><span class="pill core">2:25</span></td></tr>
+        <tr><td class="num">29</td><td>Object CSV export</td><td>Analytics &amp; Gaps</td><td>Download link</td><td><span class="pill verbal">mention</span></td></tr>
+        <tr><td class="num">30</td><td>Gap report — offline, retention, coords, consent, per-department</td><td>Analytics &amp; Gaps</td><td>Expand it</td><td><span class="pill core">2:25</span></td></tr>
+        <tr><td class="num">31</td><td>Audit log of every write and every gate decision</td><td><code>/api/audit</code></td><td>No UI</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">32</td><td>RBAC — superadmin / soc_operator / dept_viewer</td><td>Login</td><td>A dept_viewer sees only their department</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">33</td><td>Keyword query engine, labelled <code>keyword_rules</code></td><td><code>/api/query</code></td><td>No UI</td><td><span class="pill verbal">verbal</span></td></tr>
+        <tr><td class="num">34</td><td>Sentinel catalogue sync</td><td><code>/api/cameras/sync-catalogue</code></td><td>Needs <code>SENTINEL_HOST</code></td><td><span class="pill no">not configured</span></td></tr>
+        <tr><td class="num">35</td><td>Camera CSV export, audited</td><td><code>/api/cameras/export.csv</code></td><td>No UI</td><td><span class="pill verbal">verbal</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="flag watch">
+    <span class="tag">If asked</span>
+    <p>Features 31–33 have no interface. If a judge asks <em>“how do I know face recognition was actually refused?”</em>, the answer is the audit log — every gate decision writes a row like <code>face_enroll camera_id=CAM-AHD-001 gate_result=blocked reason=ownership_not_own</code>. Say that sentence; do not open a terminal on camera to prove it.</p>
+  </div>
+
+  <h2>What will fail on camera</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:42%">Do not do this</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>Open a tile for any camera except <code>CAM-OWN-001</code></td><td>HTTP 503, black rectangle. The RTSP sources are unreachable and ffmpeg has no input.</td></tr>
+        <tr><td>Look for <code>CAM-OWN-001</code> on the map</td><td>Coordinates are <code>0,0</code>, so it is deliberately not plotted. Use the Cameras table.</td></tr>
+        <tr><td>Use <strong>ANPR this still</strong></td><td>Tesseract is not installed. Returns <code>No plate.</code> every time.</td></tr>
+        <tr><td>Press <strong>Next cameras</strong></td><td>Reports distances around 8,225 km, because the last detection has null coordinates.</td></tr>
+        <tr><td>Analyse a file from <code>own_stills</code></td><td>Zero events, empty result box.</td></tr>
+        <tr><td>Analyse <code>own_feed_frame.jpg</code></td><td>Also zero events.</td></tr>
+        <tr><td>Recite a row count from memory</td><td>Operator confirms append permanently. Read the count off the screen.</td></tr>
+        <tr><td>Try to delete <code>WL-001</code></td><td>Refused by design — but a dead end on camera.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Recovery moves</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th style="width:42%">Symptom</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Grey rectangle instead of a map</td><td>OSM tiles failed. Check the network, reload, restart the take.</td></tr>
+        <tr><td><code>No open alerts</code> on the Alerts tab</td><td>The database was reset but the server was not restarted. Restart it — alerts rebuild from detections at startup.</td></tr>
+        <tr><td>Enrolment box stays empty</td><td>You are on a stale server. The current build’s form has <strong>Gallery ID</strong> and <strong>Camera ID</strong> fields; the old one has neither.</td></tr>
+        <tr><td><code>401</code> and <code>FAIL watchlist</code> in preflight</td><td><code>.env</code> was edited while the server was running. The app reads it once, at startup. Restart the server.</td></tr>
+        <tr><td>Video tile black</td><td>You opened a government camera. Close it and open <code>CAM-OWN-001</code> from the Cameras table.</td></tr>
+        <tr><td>Wrong numbers everywhere</td><td>Stop the server, delete <code>data\prahari.db</code>, start again.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The four sentences that matter</h2>
+  <p>If the recording goes wrong and you have thirty seconds to salvage it, these are the claims that differentiate the submission.</p>
+  <ol class="claims">
+    <li>Departments keep their own VMS. We sit above them and correlate.</li>
+    <li>Same photograph — identified on our own camera, refused on a government camera. Enforced server-side.</li>
+    <li>An operator confirm is a human writing a real row. It is not automatic plate recognition and we do not label it as one.</li>
+    <li>Eighty thousand cameras is a design target and it says so on screen. The measured cap on this laptop is four tiles, and we show you that number rather than hide it.</li>
+  </ol>
+
+  <footer>
+    <span>PRAHARI · Yushu Excellence · SOC</span>
+    <span>Verified against the running app, 2026-09-05</span>
+  </footer>
+
+</div>

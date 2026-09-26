@@ -9,3 +9,6 @@ catalogue.last.json
 *.log
 *.pt
 app/models_data/*.pt
+
+# Database backups made before a demo reset
+data/prahari.db.bak-*
