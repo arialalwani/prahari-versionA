@@ -1,0 +1,215 @@
+{
+  "engines": {
+    "ANPR_ENGINE": "yolo",
+    "OCR_ENGINE": "easyocr",
+    "OBJECT_ENGINE": "yolo"
+  },
+  "overall": {
+    "images": 21,
+    "unscored": 2,
+    "detection_rate": 0.8947368421052632,
+    "exact_match": 0.42105263157894735,
+    "cer": 0.19122807017543864,
+    "false_positives": 0,
+    "negatives": 0
+  },
+  "tiers": {
+    "easy": {
+      "images": 10,
+      "unscored": 0,
+      "detection_rate": 0.9,
+      "exact_match": 0.5,
+      "cer": 0.19222222222222224,
+      "false_positives": 0,
+      "negatives": 0
+    },
+    "hard": {
+      "images": 5,
+      "unscored": 1,
+      "detection_rate": 1.0,
+      "exact_match": 0.5,
+      "cer": 0.07777777777777778,
+      "false_positives": 0,
+      "negatives": 0
+    },
+    "medium": {
+      "images": 6,
+      "unscored": 1,
+      "detection_rate": 0.8,
+      "exact_match": 0.2,
+      "cer": 0.28,
+      "false_positives": 0,
+      "negatives": 0
+    }
+  },
+  "rows": [
+    {
+      "filename": "easy/easy01_daylight.jpg.png",
+      "tier": "easy",
+      "expected": "MH01EE2388",
+      "detected": "MH07EE2388",
+      "confidence": 0.3324,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/easy02_daylight.jpg.png",
+      "tier": "easy",
+      "expected": "TN11AX6639",
+      "detected": "",
+      "confidence": 0.6339,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/easy03_daylight.jpg.png",
+      "tier": "easy",
+      "expected": "MH20DV2363",
+      "detected": "MH20DV2363",
+      "confidence": 0.9031,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "easy/easy04_daylight.jpg.png",
+      "tier": "easy",
+      "expected": "GJ16CB1012",
+      "detected": "GJ16CB1012",
+      "confidence": 0.8705,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "easy/easy05_daylight.jpg.png",
+      "tier": "easy",
+      "expected": "HR26BR9044",
+      "detected": "HR26BR9044",
+      "confidence": 0.9983,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "easy/easy06_daylight.jpg",
+      "tier": "easy",
+      "expected": "DL7CQ1939",
+      "detected": "DL76O1939",
+      "confidence": 0.7574,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/easy07_daylight.jpg",
+      "tier": "easy",
+      "expected": "MH20DV2366",
+      "detected": "MH20DYZ3667",
+      "confidence": 0.207,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/easy08_daylight.jpg",
+      "tier": "easy",
+      "expected": "JH05CM0742",
+      "detected": "JH05CM0742",
+      "confidence": 0.9747,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "easy/car3_mercedes_frontal.jpg",
+      "tier": "easy",
+      "expected": "KL11BD3333",
+      "detected": "KL8D3333",
+      "confidence": 0.9992,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/fixture_synthetic.jpg",
+      "tier": "easy",
+      "expected": "GJ01AB1234",
+      "detected": "GJ01AB1234",
+      "confidence": 0.7028,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "medium/medium01_golf.jpg.png",
+      "tier": "medium",
+      "expected": "34CLC327",
+      "detected": "",
+      "confidence": 0.9927,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "medium/medium02_angled.jpg.png",
+      "tier": "medium",
+      "expected": "MH04HZ8055",
+      "detected": "MH04HZ8055",
+      "confidence": 0.9309,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "medium/medium03_distance.jpg.png",
+      "tier": "medium",
+      "expected": "UNKNOWN",
+      "detected": "",
+      "confidence": 0.0,
+      "verdict": "UNSCORED"
+    },
+    {
+      "filename": "medium/medium04_mixedlight.jpg.png",
+      "tier": "medium",
+      "expected": "PB65AM0008",
+      "detected": "PB65AB0008",
+      "confidence": 0.3699,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "medium/car1_alcazar_garage.jpeg",
+      "tier": "medium",
+      "expected": "MH43CC1745",
+      "detected": "HH43CC1745",
+      "confidence": 0.686,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "medium/car4_brezza_angled.webp",
+      "tier": "medium",
+      "expected": "TN05BF0500",
+      "detected": "LX05BF0500",
+      "confidence": 0.7837,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "hard/hard01_blurry.jpg.png",
+      "tier": "hard",
+      "expected": "UNKNOWN",
+      "detected": "TR1J561",
+      "confidence": 0.3118,
+      "verdict": "UNSCORED"
+    },
+    {
+      "filename": "hard/hard02_far.png",
+      "tier": "hard",
+      "expected": "KA09MA2662",
+      "detected": "HA0PMA2662",
+      "confidence": 0.5555,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "hard/hard03_occluded.jpg.jpg",
+      "tier": "hard",
+      "expected": "MH01CT8020",
+      "detected": "MH01CT8020",
+      "confidence": 0.9915,
+      "verdict": "PASS"
+    },
+    {
+      "filename": "hard/hard04_lowlight.jpg.png",
+      "tier": "hard",
+      "expected": "GJ17N1016",
+      "detected": "GJ11N1016",
+      "confidence": 0.9303,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "hard/car2_creta_taped.jpg",
+      "tier": "hard",
+      "expected": "MH14M4727",
+      "detected": "MH14M4727",
+      "confidence": 0.719,
+      "verdict": "PASS"
+    }
+  ]
+}

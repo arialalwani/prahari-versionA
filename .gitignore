@@ -77,3 +77,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# ANPR test set: real third-party photos stay local (copyright, real plates).
+# Only the synthetic plate is published; ground truth and README are kept.
+03_Data/samples/anpr_testset/*/*
+!03_Data/samples/anpr_testset/easy/fixture_synthetic.jpg

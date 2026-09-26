@@ -22,9 +22,16 @@ def engine_available() -> bool:
 
 
 class _TrackArgs:
+    # ultralytics >= 8.4 takes frame_rate on args; older builds took it as a
+    # BYTETracker keyword. Both are handled in _get_tracker.
     track_thresh = 0.25
+    track_high_thresh = 0.25
+    track_low_thresh = 0.1
+    new_track_thresh = 0.25
     track_buffer = 30
     match_thresh = 0.8
+    fuse_score = False
+    frame_rate = 30
     mot20 = False
 
 
@@ -35,7 +42,10 @@ def _get_tracker(camera_id: str) -> Any:
 
     cam = camera_id or "_"
     if cam not in _OPEN:
-        _OPEN[cam] = BYTETracker(args=_TrackArgs(), frame_rate=30)
+        try:
+            _OPEN[cam] = BYTETracker(args=_TrackArgs())
+        except TypeError:
+            _OPEN[cam] = BYTETracker(args=_TrackArgs(), frame_rate=30)
     return _OPEN[cam]
 
 

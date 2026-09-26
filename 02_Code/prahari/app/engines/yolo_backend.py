@@ -147,20 +147,40 @@ def detect_vehicles(frame_bgr: np.ndarray, conf: float = 0.35) -> list[Detection
     return dets
 
 
-def detect_plate(vehicle_crop_bgr: np.ndarray, conf: float = 0.30) -> Detection | None:
+def detect_plates(image_bgr: np.ndarray, conf: float = 0.30) -> list[Detection]:
+    """All plate boxes in the image, most confident first.
+
+    Works on a whole frame as well as a vehicle crop — measured, the plate model
+    finds plates on frames where vehicle detection returns nothing at all, so the
+    caller should not assume a vehicle box is a prerequisite.
+    """
     model = _get_plate_model()
-    if model is None or vehicle_crop_bgr is None:
-        return None
+    if model is None or image_bgr is None or getattr(image_bgr, "size", 0) == 0:
+        return []
     try:
-        results = model(vehicle_crop_bgr, conf=conf, verbose=False)
+        results = model(image_bgr, conf=conf, verbose=False)
     except Exception as exc:
         log.warning("YOLO plate detect failed: %s", exc)
-        return None
+        return []
     if not results or len(results[0].boxes) == 0:
-        return None
-    box = results[0].boxes[0]
-    b = [float(v) for v in box.xyxy[0].tolist()]
-    c = float(box.conf[0])
-    cls_id = int(box.cls[0])
-    label = str(getattr(model, "names", {}).get(cls_id, "plate"))
-    return Detection(b, c, cls_id, label)
+        return []
+    names = getattr(model, "names", {}) or {}
+    out: list[Detection] = []
+    for box in results[0].boxes:
+        cls_id = int(box.cls[0])
+        out.append(
+            Detection(
+                [float(v) for v in box.xyxy[0].tolist()],
+                float(box.conf[0]),
+                cls_id,
+                str(names.get(cls_id, "plate")),
+            )
+        )
+    out.sort(key=lambda d: d.conf, reverse=True)
+    return out
+
+
+def detect_plate(vehicle_crop_bgr: np.ndarray, conf: float = 0.30) -> Detection | None:
+    """Single best plate box, or None. Thin wrapper over detect_plates()."""
+    plates = detect_plates(vehicle_crop_bgr, conf=conf)
+    return plates[0] if plates else None

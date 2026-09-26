@@ -1,0 +1,83 @@
+{
+  "engines": {
+    "ANPR_ENGINE": "yolo",
+    "OCR_ENGINE": "easyocr",
+    "OBJECT_ENGINE": "yolo"
+  },
+  "overall": {
+    "images": 5,
+    "detection_rate": 0.2,
+    "exact_match": 0.0,
+    "cer": 0.8400000000000001,
+    "false_positives": 0,
+    "negatives": 0
+  },
+  "tiers": {
+    "easy": {
+      "images": 2,
+      "detection_rate": 0.0,
+      "exact_match": 0.0,
+      "cer": 1.0,
+      "false_positives": 0,
+      "negatives": 0
+    },
+    "hard": {
+      "images": 1,
+      "detection_rate": 0.0,
+      "exact_match": 0.0,
+      "cer": 1.0,
+      "false_positives": 0,
+      "negatives": 0
+    },
+    "medium": {
+      "images": 2,
+      "detection_rate": 0.5,
+      "exact_match": 0.0,
+      "cer": 0.6,
+      "false_positives": 0,
+      "negatives": 0
+    }
+  },
+  "rows": [
+    {
+      "filename": "easy/fixture_synthetic.jpg",
+      "tier": "easy",
+      "expected": "GJ01AB1234",
+      "detected": "",
+      "confidence": 0.9981,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "easy/car3_mercedes_frontal.jpg",
+      "tier": "easy",
+      "expected": "KL11BD3333",
+      "detected": "",
+      "confidence": 0.9181,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "medium/car1_alcazar_garage.jpeg",
+      "tier": "medium",
+      "expected": "MH43CC1745",
+      "detected": "FH43C1745",
+      "confidence": 0.7881,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "medium/car4_brezza_angled.webp",
+      "tier": "medium",
+      "expected": "TN05BF0500",
+      "detected": "",
+      "confidence": 0.2498,
+      "verdict": "FAIL"
+    },
+    {
+      "filename": "hard/car2_creta_taped.jpg",
+      "tier": "hard",
+      "expected": "MH14M4727",
+      "detected": "",
+      "confidence": 0.6002,
+      "verdict": "FAIL"
+    }
+  ]
+}

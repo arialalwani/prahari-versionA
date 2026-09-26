@@ -107,17 +107,26 @@ async def ingest_frame(
     if frame is None:
         raise HTTPException(status_code=400, detail="could not decode image")
     result = recognize(frame)
+    # The full reading travels with every response, accepted or not. Confidence
+    # describes the reading; it never decides whether the reading is reported.
+    from app.services.anpr import STATUS_LABELS
+
+    status = result.get("status") or ""
+    reading = {
+        "plate_raw": result.get("plate_raw") or "",
+        "plate_candidate": result.get("plate_candidate") or "",
+        "confidence": result.get("confidence"),
+        "status": status,
+        "status_label": STATUS_LABELS.get(status, status),
+        "validation": result.get("validation") or "",
+        "plate_corrected": bool(result.get("plate_corrected")),
+    }
     if not result.get("plate"):
-        return {
-            "plate": None,
-            "plate_raw": result.get("plate_raw"),
-            "confidence": result.get("confidence"),
-            "inserted": False,
-        }
+        return {"plate": None, "inserted": False, **reading}
     event = _event_from_anpr(cam, result)
     store.insert_detection(event)
     alert = matcher.on_detection(event)
-    return {"inserted": True, "event": event, "alert": alert}
+    return {"inserted": True, "event": event, "alert": alert, **reading}
 
 
 @router.post("/api/ingest/analyse")

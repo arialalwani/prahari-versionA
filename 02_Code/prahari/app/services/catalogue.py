@@ -39,6 +39,18 @@ _ALIASES = {
 
 _SESSION: dict[str, Any] = {"client": None, "base": ""}
 
+# The sandbox slows down under load near the deadline. 20s was too tight to log in
+# and pull the manifest; SENTINEL_TIMEOUT_S tunes it without a code change.
+DEFAULT_TIMEOUT_S = 60.0
+
+
+def _timeout_s() -> float:
+    try:
+        value = float(config.getenv("SENTINEL_TIMEOUT_S", "") or DEFAULT_TIMEOUT_S)
+    except ValueError:
+        return DEFAULT_TIMEOUT_S
+    return value if value > 0 else DEFAULT_TIMEOUT_S
+
 
 def _fold(raw: dict[str, Any]) -> dict[str, Any]:
     return {str(k).lower().replace("-", "_"): v for k, v in raw.items()}
@@ -203,7 +215,7 @@ def session(host: str | None = None) -> tuple[httpx.Client, str]:
     if _SESSION["client"] is not None:
         _SESSION["client"].close()
     client = httpx.Client(
-        timeout=20.0,
+        timeout=_timeout_s(),
         follow_redirects=True,
         headers={"User-Agent": BROWSER_UA, "Referer": base + "/", "Accept": "*/*"},
     )
