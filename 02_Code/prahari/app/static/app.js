@@ -681,10 +681,39 @@ async function loadWatchlist() {
   $("wl-table").innerHTML = "<thead><tr><th>id</th><th>type</th><th>plate</th><th>name</th><th>gallery</th><th>category</th><th>priority</th><th>source</th></tr></thead><tbody>" +
     (rows.length ? rows.map((w) => "<tr><td class='id'>" + esc(w.source_case_id) + "</td><td>" + (w.entity_type === "person" ? icon("user") : icon("car")) + " " + esc(w.entity_type || "") +
       "</td><td>" + (w.plate ? plateHtml(w.plate) : "") +
-      "</td><td>" + esc(w.name || "") + "</td><td class='id'>" + esc(w.gallery_id || "") + "</td><td>" + (w.category ? "<span class='pill " + (w.priority === "CRITICAL" ? "crit" : "neutral") + "'>" + esc(w.category) + "</span>" : "") +
+      "</td><td>" + esc(w.name || w.notes || "") + "</td><td class='id'>" + esc(w.gallery_id || "") + "</td><td>" + (w.category ? "<span class='pill " + (w.priority === "CRITICAL" ? "crit" : "neutral") + "'>" + esc(w.category) + "</span>" : "") +
       "</td><td><span class='pri-badge " + esc(w.priority) + "'>" + esc(w.priority) + "</span></td><td class='src'>" + esc(w.source || "") + "</td></tr>").join("")
       : "<tr class='empty-row'><td colspan='8'>Watchlist is empty.</td></tr>") +
     "</tbody>";
+  fillCaseIds(rows);
+}
+
+// Next unused case ID in the WL-NNN series.
+function nextCaseId(rows) {
+  let max = 0;
+  rows.forEach((w) => {
+    const m = /^WL-(\d+)$/i.exec(w.source_case_id || "");
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  });
+  return "WL-" + String(max + 1).padStart(3, "0");
+}
+
+// Case IDs fill themselves with the next free number. A value the operator
+// typed is never overwritten. The enrol form also offers existing person
+// cases, for adding more photos of someone already on the list.
+function fillCaseIds(rows) {
+  const next = nextCaseId(rows);
+  ["wl-id", "enroll-gallery"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    if (!el.dataset.typed) el.value = next;
+    el.oninput = () => { el.dataset.typed = el.value ? "1" : ""; };
+  });
+  const list = $("person-cases");
+  if (list) {
+    list.innerHTML = rows.filter((w) => w.entity_type === "person").map((w) =>
+      "<option value='" + esc(w.source_case_id) + "'>" + esc(w.name || w.category || "person") + "</option>").join("");
+  }
 }
 
 // ---------- Analytics & gaps ----------
@@ -920,6 +949,19 @@ function previewOf(file) {
   try { return URL.createObjectURL(file); } catch (e) { return ""; }
 }
 
+// Carry the ANPR reading into Operator confirm: same camera, and the verified
+// plate or, failing that, the best reading for the operator to check and fix.
+function prefillConfirm(data) {
+  const plate = (data && (data.plate || (data.event && data.event.plate) || data.plate_candidate)) || "";
+  if ($("confirm-cam")) $("confirm-cam").value = $("anpr-cam").value;
+  if (plate && $("confirm-plate")) {
+    $("confirm-plate").value = normPlate(plate);
+    $("confirm-plate").classList.remove("filled");
+    void $("confirm-plate").offsetWidth;
+    $("confirm-plate").classList.add("filled");
+  }
+}
+
 async function runAnpr(file) {
   if (!file) return;
   const out = $("anpr-out");
@@ -937,6 +979,7 @@ async function runAnpr(file) {
   if (!r.ok) { out.innerHTML = errorHtml("ANPR failed: " + r.error); return; }
   renderResult(out, r.data, previewOf(file));
   if (r.data && r.data.alert) toast("<strong>Watchlist hit</strong> · " + esc(r.data.alert.plate || "") + " · " + esc(r.data.alert.category || ""), "crit");
+  prefillConfirm(r.data);
   loadAlerts();
   loadDetections();
   refreshHealth();
@@ -945,7 +988,7 @@ async function runAnpr(file) {
 async function runAnalyse(file) {
   if (!file) return;
   const out = $("analyse-out");
-  out.innerHTML = loadingHtml("Analysing still for plates, objects and permitted faces…");
+  out.innerHTML = loadingHtml("Analysing still for plates, people and permitted faces…");
   const fd = new FormData();
   fd.append("file", file);
   fd.append("camera_id", $("analyse-cam").value);
@@ -1008,10 +1051,26 @@ $("confirm-face-form").onsubmit = async (e) => {
 $("wl-form").onsubmit = async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
+  const caseId = String(fd.get("source_case_id") || "").trim().toUpperCase();
+  const plate = normPlate(fd.get("plate"));
+  if (!plate) { toast("Enter the vehicle's plate number.", "err"); return; }
+  fd.set("source_case_id", caseId);
+  fd.set("plate", plate);
+  const existed = state.watchlist.some((w) => w.source_case_id === caseId);
+  // One case per plate: the matcher keeps a single row per plate, so a second
+  // case would silently replace the first one's category and priority.
+  const clash = state.watchlist.find((w) => normPlate(w.plate) === plate && w.source_case_id !== caseId);
+  if (clash) {
+    toast(esc(plate) + " is already on the watchlist as " + esc(clash.source_case_id) + " (" + esc(clash.category || "no category") + "). Edit that case instead.", "err");
+    return;
+  }
   await withBusy(e.submitter, async () => {
     const r = await readJson(await api("/api/watchlist", { method: "POST", json: Object.fromEntries(fd.entries()) }));
-    if (r.ok) toast("Watchlist entry " + esc(fd.get("source_case_id")) + " saved.");
-    else toast("Save failed: " + esc(r.error), "err");
+    if (r.ok) {
+      toast("Watchlist entry " + esc(caseId) + (existed ? " updated." : " saved.") + " " + esc(plate) + " is now being watched.");
+      e.target.reset();
+      $("wl-id").dataset.typed = "";
+    } else toast("Save failed: " + esc(r.error), "err");
   });
   loadWatchlist();
 };
@@ -1025,6 +1084,7 @@ if ($("enroll-person-form")) {
       const r = await readJson(await api("/api/faces/enroll", { method: "POST", body: fd }));
       if (!r.ok) { out.innerHTML = errorHtml("Enroll failed: " + r.error); return; }
       renderResult(out, r.data);
+      $("enroll-gallery").dataset.typed = "";
     });
     loadWatchlist();
   };

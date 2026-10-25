@@ -150,6 +150,27 @@ class Reading:
         return self.plate is not None
 
 
+#: High-security plates (HSRP) carry a small "IND" mark beside the characters,
+#: and OCR reads it as part of the plate: measured on a two-row bike plate,
+#: "IND" + "PBO8D" + "B3893". No state code starts with "IN", so a leading
+#: label can never be part of a real plate and is safe to drop.
+_HSRP_LABELS = ("INDIA", "IND")
+
+
+def _repair_with_label(compact: str) -> tuple[str | None, bool, str]:
+    """repair(), retried without a leading HSRP label. Returns the text used."""
+    plate, corrected = repair(compact)
+    if plate:
+        return plate, corrected, compact
+    for label in _HSRP_LABELS:
+        rest = compact[len(label):]
+        if compact.startswith(label) and len(rest) >= 7:
+            plate, corrected = repair(rest)
+            if plate:
+                return plate, corrected, rest
+    return None, False, compact
+
+
 def inspect(raw: str | None) -> Reading:
     """Validate a reading and explain the verdict in plain language."""
     text = "" if raw is None else str(raw)
@@ -157,7 +178,11 @@ def inspect(raw: str | None) -> Reading:
     if not compact:
         return Reading(text, None, False, "no text read")
 
-    plate, corrected = repair(compact)
+    plate, corrected, used = _repair_with_label(compact)
+    if plate and used != compact:
+        fixes = sum(1 for a, b in zip(plate, used) if a != b)
+        reason = "ignored the IND plate label" + (f"; corrected {fixes} character(s)" if fixes else "")
+        return Reading(text, plate, corrected, reason)
     if plate:
         reason = (
             f"corrected {sum(1 for a, b in zip(plate, compact) if a != b)} character(s)"
@@ -203,4 +228,5 @@ def normalise_ex(raw: str | None) -> tuple[str | None, bool]:
     compact = re.sub(r"[\s\-]", "", str(raw)).upper()
     if not compact:
         return None, False
-    return repair(compact)
+    plate, corrected, _ = _repair_with_label(compact)
+    return plate, corrected

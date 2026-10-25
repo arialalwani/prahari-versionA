@@ -15,7 +15,10 @@ from app import config
 
 log = logging.getLogger("prahari.objects")
 
-CLASSES = {"person", "car", "motorcycle", "bus", "truck", "bicycle"}
+# Only people are reported. Vehicle classes (car, bus, truck, motorcycle,
+# bicycle) were logged as separate rows that nothing used; plates are read by
+# ANPR, which finds vehicles through its own list in yolo_backend.
+CLASSES = {"person"}
 _COCO_TO_OURS = {
     "person": "person",
     "car": "car",
@@ -179,6 +182,10 @@ def detect(frame_bgr: np.ndarray, camera_id: str = "") -> list[dict[str, Any]]:
     if not hits:
         dnn = _dnn_detect(frame_bgr)
         hits = dnn if dnn else _blob_fallback(frame_bgr)
+    # Filter after the fallback decision, not before: YOLO still looks for
+    # vehicles, so a frame with only cars counts as "detector worked, no
+    # people" and does not fall through to the skin-blob fallback.
+    hits = [h for h in hits if h.get("object_class") in CLASSES]
     track_engine = config.getenv("TRACK_ENGINE", "iou").lower()
     assigned = False
     if track_engine == "bytetrack" and hits:

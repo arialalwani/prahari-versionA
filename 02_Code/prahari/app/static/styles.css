@@ -819,3 +819,8 @@ details#predict-box { margin-top: 12px; }
   .plate.lg { font-size: 19px; }
   #whoami { display: none; }
 }
+
+/* Operator confirm briefly highlights when ANPR fills it in. */
+input.filled { animation: filled 1.6s ease-out; }
+@keyframes filled { from { background: var(--tint-high); border-color: var(--khaki); } to { background: var(--field); } }
+select { cursor: pointer; }

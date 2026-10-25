@@ -49,8 +49,36 @@ def test_noise_returns_empty():
 def test_classes_are_mapped():
     from app.services.objects import CLASSES, _COCO_TO_OURS
 
-    assert CLASSES == {"person", "car", "motorcycle", "bus", "truck", "bicycle"}
+    # Only people are reported; the COCO name map is kept for the detector.
+    assert CLASSES == {"person"}
     assert _COCO_TO_OURS["motorbike"] == "motorcycle"
+
+
+def test_vehicle_hits_are_not_reported(monkeypatch):
+    import numpy as np
+
+    from app.services import objects
+
+    fake = [
+        {"object_class": "car", "confidence": 0.9, "bbox": [0, 0, 10, 10]},
+        {"object_class": "person", "confidence": 0.8, "bbox": [20, 20, 10, 10]},
+        {"object_class": "truck", "confidence": 0.7, "bbox": [40, 40, 10, 10]},
+    ]
+    monkeypatch.setenv("OBJECT_ENGINE", "yolo")
+    monkeypatch.setattr(objects, "_yolo_detect", lambda frame: [dict(h) for h in fake])
+    hits = objects.detect(np.zeros((64, 64, 3), np.uint8))
+    assert [h["object_class"] for h in hits] == ["person"]
+
+
+def test_vehicles_only_frame_does_not_trigger_blob_fallback(monkeypatch):
+    import numpy as np
+
+    from app.services import objects
+
+    monkeypatch.setenv("OBJECT_ENGINE", "yolo")
+    monkeypatch.setattr(objects, "_yolo_detect", lambda frame: [{"object_class": "car", "confidence": 0.9, "bbox": [0, 0, 10, 10]}])
+    monkeypatch.setattr(objects, "_blob_fallback", lambda frame: (_ for _ in ()).throw(AssertionError("fallback ran")))
+    assert objects.detect(np.zeros((64, 64, 3), np.uint8)) == []
 
 
 def test_analyse_inserts_object_rows(client, auth):

@@ -316,11 +316,11 @@ class YoloEngine:
         import pytesseract as _pt
 
         boxes = self._plate_boxes(frame_bgr)
+        best: dict[str, Any] | None = None
         if boxes:
             use_tesseract = ocr_engine() != "easyocr"
             if use_tesseract:
                 _bind_tesseract(_pt)
-            best: dict[str, Any] | None = None
             for box, _conf in boxes:
                 crop = self._pad(frame_bgr, box)
                 result = _read_region(_pt if use_tesseract else None, crop)
@@ -348,7 +348,14 @@ class YoloEngine:
                 else:
                     result["box"] = vbox
                 return result
-        return _tesseract_recognize(frame_bgr)
+        fallback = _tesseract_recognize(frame_bgr)
+        # The shape heuristic only replaces the plate model's reading when it
+        # finds an actual plate. Otherwise keep the reading from the box the
+        # plate model found: measured on a bike photo, the heuristic's best was
+        # the plate's "IND" label while the plate box had read the full plate.
+        if fallback.get("plate") or not (best and best.get("plate_raw")):
+            return fallback
+        return best
 
 
 def _safe_vehicles(frame_bgr: np.ndarray) -> list[Any]:
