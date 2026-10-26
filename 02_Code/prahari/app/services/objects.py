@@ -1,14 +1,15 @@
-"""CPU object detection. COCO subset; blob fallback so tests do not need GPU weights."""
+"""Person detection. YOLO only: no detector means no people, never an invented one.
+
+A skin-colour fallback used to label any large skin-toned patch "person" when
+YOLO found nothing, so walls, faces and brown cars became people and could
+raise intrusion alerts. It was removed in Phase 0 of the face/ReID upgrade.
+"""
 
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
-os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
-
-import cv2
 import numpy as np
 
 from app import config
@@ -79,48 +80,6 @@ def _assign_track(camera_id: str, bbox: list[int], cls: str) -> str:
     return tid
 
 
-def _blob_fallback(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
-    """Skin-tone blob occupying >= 8% of the frame is labelled person. Deterministic fixture path."""
-    if frame_bgr is None or frame_bgr.size == 0:
-        return []
-    h, w = frame_bgr.shape[:2]
-    hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, (0, 20, 70), (35, 255, 255))
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    out: list[dict[str, Any]] = []
-    min_area = 0.08 * h * w
-    for cnt in contours:
-        x, y, cw, ch = cv2.boundingRect(cnt)
-        if cw * ch < min_area:
-            continue
-        crop = frame_bgr[y : y + ch, x : x + cw]
-        out.append(
-            {
-                "object_class": "person",
-                "confidence": 0.5,
-                "bbox": [int(x), int(y), int(cw), int(ch)],
-                "crop_bgr": crop,
-            }
-        )
-    return out
-
-
-def _dnn_detect(frame_bgr: np.ndarray) -> list[dict[str, Any]] | None:
-    weights = config.ROOT / "app" / "models_data"
-    onnx = next(iter(weights.glob("*.onnx")), None) if weights.is_dir() else None
-    if onnx is None:
-        return None
-    try:
-        net = cv2.dnn.readNetFromONNX(str(onnx))
-        blob = cv2.dnn.blobFromImage(frame_bgr, 1 / 255.0, (640, 640), swapRB=True, crop=False)
-        net.setInput(blob)
-        _ = net.forward()
-    except Exception as exc:
-        log.warning("opencv dnn skipped: %s", exc)
-        return None
-    return []
-
-
 def _yolo_detect(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
     from app.engines.yolo_backend import detect_objects
 
@@ -171,21 +130,19 @@ def _assign_bytetrack(camera_id: str, hits: list[dict[str, Any]]) -> bool:
 def detect(frame_bgr: np.ndarray, camera_id: str = "") -> list[dict[str, Any]]:
     if frame_bgr is None or getattr(frame_bgr, "size", 0) == 0:
         return []
-    engine = config.getenv("OBJECT_ENGINE", "opencv").lower()
-    hits: list[dict[str, Any]] = []
-    if engine == "yolo":
-        try:
-            hits = _yolo_detect(frame_bgr)
-        except Exception as exc:
-            log.warning("OBJECT_ENGINE=yolo unavailable (%s); fallback", exc)
-            hits = []
-    if not hits:
-        dnn = _dnn_detect(frame_bgr)
-        hits = dnn if dnn else _blob_fallback(frame_bgr)
-    # Filter after the fallback decision, not before: YOLO still looks for
-    # vehicles, so a frame with only cars counts as "detector worked, no
-    # people" and does not fall through to the skin-blob fallback.
+    engine = config.getenv("OBJECT_ENGINE", "yolo").lower()
+    if engine != "yolo":
+        # Any other value switches person detection off. There is no
+        # heuristic substitute: a missing detector reports no people.
+        return []
+    try:
+        hits = _yolo_detect(frame_bgr)
+    except Exception as exc:
+        log.warning("OBJECT_ENGINE=yolo unavailable (%s); no person detection", exc)
+        return []
     hits = [h for h in hits if h.get("object_class") in CLASSES]
+    for hit in hits:
+        hit["detector"] = "yolo"
     track_engine = config.getenv("TRACK_ENGINE", "iou").lower()
     assigned = False
     if track_engine == "bytetrack" and hits:

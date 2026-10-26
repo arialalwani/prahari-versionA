@@ -30,12 +30,41 @@ def _empty_noise() -> Path:
     return path
 
 
-def test_blob_fixture_is_person():
+# A real YOLO person hit, used where a test needs a person to exist. The
+# skin-coloured fixture is now a negative: it used to be labelled "person".
+_YOLO_PERSON = {"object_class": "person", "confidence": 0.82, "bbox": [260, 140, 120, 220]}
+
+
+def _stub_yolo(monkeypatch, hits):
+    from app.services import objects
+
+    monkeypatch.setenv("OBJECT_ENGINE", "yolo")
+    monkeypatch.setattr(objects, "_yolo_detect", lambda frame: [dict(h) for h in hits])
+
+
+def test_skin_coloured_patch_is_not_a_person(monkeypatch):
     from app.services.objects import detect
 
+    _stub_yolo(monkeypatch, [])  # YOLO sees no one
     frame = cv2.imread(str(_person_blob()))
-    hits = detect(frame, camera_id="CAM-OWN-001")
-    assert any(h["object_class"] == "person" for h in hits)
+    assert detect(frame, camera_id="CAM-OWN-001") == []
+
+
+def test_no_detector_means_no_people():
+    from app.services.objects import detect
+
+    # conftest sets OBJECT_ENGINE=opencv, i.e. no YOLO: nothing is invented.
+    frame = cv2.imread(str(_person_blob()))
+    assert detect(frame, camera_id="CAM-OWN-001") == []
+
+
+def test_yolo_person_is_reported_and_marked(monkeypatch):
+    from app.services.objects import detect
+
+    _stub_yolo(monkeypatch, [_YOLO_PERSON])
+    hits = detect(cv2.imread(str(_person_blob())), camera_id="CAM-OWN-001")
+    assert [h["object_class"] for h in hits] == ["person"]
+    assert hits[0]["detector"] == "yolo"
 
 
 def test_noise_returns_empty():
@@ -70,18 +99,28 @@ def test_vehicle_hits_are_not_reported(monkeypatch):
     assert [h["object_class"] for h in hits] == ["person"]
 
 
-def test_vehicles_only_frame_does_not_trigger_blob_fallback(monkeypatch):
+def test_vehicles_only_frame_has_no_people(monkeypatch):
     import numpy as np
 
     from app.services import objects
 
-    monkeypatch.setenv("OBJECT_ENGINE", "yolo")
-    monkeypatch.setattr(objects, "_yolo_detect", lambda frame: [{"object_class": "car", "confidence": 0.9, "bbox": [0, 0, 10, 10]}])
-    monkeypatch.setattr(objects, "_blob_fallback", lambda frame: (_ for _ in ()).throw(AssertionError("fallback ran")))
+    _stub_yolo(monkeypatch, [{"object_class": "car", "confidence": 0.9, "bbox": [0, 0, 10, 10]}])
     assert objects.detect(np.zeros((64, 64, 3), np.uint8)) == []
 
 
-def test_analyse_inserts_object_rows(client, auth):
+def test_yolo_failure_reports_no_people(monkeypatch):
+    from app.services import objects
+
+    def boom(frame):
+        raise RuntimeError("model failed")
+
+    monkeypatch.setenv("OBJECT_ENGINE", "yolo")
+    monkeypatch.setattr(objects, "_yolo_detect", boom)
+    assert objects.detect(cv2.imread(str(_person_blob()))) == []
+
+
+def test_analyse_inserts_object_rows(client, auth, monkeypatch):
+    _stub_yolo(monkeypatch, [_YOLO_PERSON])
     png = _person_blob().read_bytes()
     res = client.post(
         "/api/ingest/analyse",
@@ -95,7 +134,8 @@ def test_analyse_inserts_object_rows(client, auth):
     assert "object" in types
 
 
-def test_objects_report_csv(client, auth):
+def test_objects_report_csv(client, auth, monkeypatch):
+    _stub_yolo(monkeypatch, [_YOLO_PERSON])
     png = _person_blob().read_bytes()
     client.post(
         "/api/ingest/analyse",

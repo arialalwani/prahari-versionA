@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` and set `JUDGE_PASSWORD`. Set `SENTINEL_HOST`, `SE
 
 Tesseract OCR (optional; confirm path covers the demo): `choco install tesseract` or the UB Mannheim installer, then ensure `tesseract` is on PATH.
 
-Optional vision engines (torch). Default path needs no GPU. Histogram FRS, blob objects, Tesseract ANPR, and IoU `track_id` are the no-GPU path. FaceNet, YOLO, and ByteTrack sit behind `FACE_ENGINE` / `OBJECT_ENGINE` / `ANPR_ENGINE` / `TRACK_ENGINE` when `requirements-vision.txt` is installed. Faces still run only on Own cameras.
+Optional vision engines (torch). Default path needs no GPU. Histogram FRS, Tesseract ANPR, and IoU `track_id` are the no-GPU path. FaceNet, YOLO, and ByteTrack sit behind `FACE_ENGINE` / `OBJECT_ENGINE` / `ANPR_ENGINE` / `TRACK_ENGINE` when `requirements-vision.txt` is installed. Faces still run only on Own cameras. Person detection is YOLO only: without the vision extras no people are detected, rather than guessed.
 
 ## Live ingest
 

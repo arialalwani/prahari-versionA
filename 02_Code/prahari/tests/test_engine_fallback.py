@@ -38,8 +38,8 @@ def test_yolo_object_engine_without_ultralytics_falls_back(monkeypatch):
     monkeypatch.setattr("app.engines.yolo_backend.detect_objects", boom)
     frame = cv2.imread(str(_person_blob()))
     hits = detect(frame, camera_id="CAM-OWN-001")
-    assert isinstance(hits, list)
-    assert any(h["object_class"] == "person" for h in hits)
+    # Without YOLO there is no person detector, so nothing is invented.
+    assert hits == []
 
 
 def test_yolo_anpr_engine_without_ultralytics_falls_back(monkeypatch):

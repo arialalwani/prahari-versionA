@@ -164,7 +164,7 @@ Copy from `.env.example`. Never commit `.env`.
 | `ANPR_MIN_CONFIDENCE` | 0.35 | Drop junk OCR |
 | `ANPR_ENGINE` | tesseract | Set `yolo` only when that engine is wired |
 | `FACE_ENGINE` | histogram | Set `facenet` only with vision extras |
-| `OBJECT_ENGINE` | opencv | Set `yolo` only with vision extras |
+| `OBJECT_ENGINE` | yolo | Person detection, YOLO only. Any other value turns it off |
 | `TRACK_ENGINE` | iou | Set `bytetrack` only with vision extras |
 | `DB_PATH` | data/prahari.db | SQLite file |
 | `CROP_DIR` | data/crops | Plate crops |
