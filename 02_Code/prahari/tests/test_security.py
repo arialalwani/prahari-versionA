@@ -48,13 +48,13 @@ def test_viewer_cannot_enroll_faces(client):
     assert res.status_code == 403
 
 
-def test_auditor_cannot_confirm_face(client):
+def test_confirm_face_endpoint_removed(client, auth):
     res = client.post(
         "/api/ingest/confirm-face",
         json={"camera_id": "CAM-OWN-001", "gallery_id": "WL-004"},
-        auth=("auditor", "auditor"),
+        auth=auth,
     )
-    assert res.status_code == 403
+    assert res.status_code in {404, 405}
 
 
 def test_unauthenticated_analyse_401(client):

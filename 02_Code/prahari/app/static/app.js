@@ -1037,17 +1037,6 @@ $("confirm-form").onsubmit = async (e) => {
   loadDetections();
   refreshHealth();
 };
-$("confirm-face-form").onsubmit = async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  await withBusy(e.submitter, async () => {
-    const r = await readJson(await api("/api/ingest/confirm-face", { method: "POST", json: { camera_id: fd.get("camera_id"), gallery_id: fd.get("gallery_id") } }));
-    if (r.ok) toast("Face confirm recorded for gallery " + esc(fd.get("gallery_id")) + ".");
-    else toast("Confirm face failed: " + esc(r.error), "err");
-  });
-  loadAlerts();
-  loadDetections();
-};
 $("wl-form").onsubmit = async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);

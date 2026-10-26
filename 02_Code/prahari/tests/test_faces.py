@@ -40,7 +40,7 @@ def test_analyse_raises_no_face_alert_on_own_camera(client, auth, tmp_path, monk
     assert body["alerts"] == []
 
 
-def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):
+def test_enroll_api_and_no_manual_confirm_face(client, auth, tmp_path, monkeypatch):
     from tests.synthetic_faces import write_fixture_pair
 
     a, _ = write_fixture_pair(tmp_path, "WL-004", seed=4)
@@ -57,19 +57,16 @@ def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):
     assert "embedding" not in blob.lower()
     assert "descriptor" not in blob.lower()
     assert "lbph" not in blob.lower()
+    # Manual "Confirm face" is gone: it recorded an identity with no
+    # verification. The Phase 2 review queue replaces it.
     confirm = client.post(
         "/api/ingest/confirm-face",
         json={"camera_id": "CAM-OWN-001", "gallery_id": "WL-004"},
         auth=auth,
     )
-    assert confirm.status_code == 200, confirm.text
-    body = confirm.json()
-    assert body["inserted"] is True
-    assert body["event"]["source"] == "operator_confirm"
-    assert body["event"]["confidence"] == 1.0
-    assert body["event"]["entity_type"] == "person"
-    assert body["alert"] is not None
-    assert body["alert"]["priority"] == "HIGH"
+    assert confirm.status_code in {404, 405}
+    alerts = client.get("/api/alerts", auth=auth).json()
+    assert not [a for a in alerts if a.get("entity_type") == "person"]
 
 
 def test_no_face_events_on_cam04(client, auth, tmp_path):

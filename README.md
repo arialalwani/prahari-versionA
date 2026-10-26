@@ -219,7 +219,6 @@ After login, set `SENTINEL_HOST` and call `POST /api/cameras/sync-catalogue` (as
 | POST | `/api/ingest/frame` | Still image ANPR |
 | POST | `/api/ingest/analyse` | Multi-engine still |
 | POST | `/api/ingest/confirm` | Operator override |
-| POST | `/api/ingest/confirm-face` | Own cameras only |
 | GET | `/api/detections` | Filter by plate / camera |
 | GET/POST/DELETE | `/api/watchlist` | Representative watchlist; `WL-001` cannot be deleted |
 | POST | `/api/faces/enroll` | Enrolled gallery |

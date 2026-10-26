@@ -76,7 +76,7 @@ updates are connected (`WS connected`), the IST clock and who is signed in.
 - **Forms:** add a new entry, or enrol a person's photo into a gallery.
 
 **Onboard**
-- **Left column:** Add camera, CSV import, and Operator confirm (plate or face).
+- **Left column:** Add camera, CSV import, and Operator confirm (plate).
 - **Right column:** **ANPR this still** is the main feature. **Analyse this still** runs plates, objects and (own cameras only) faces.
 
 **Analytics & Gaps**

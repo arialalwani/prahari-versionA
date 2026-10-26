@@ -27,12 +27,6 @@ class ConfirmIn(BaseModel):
     ts: str | None = None
 
 
-class ConfirmFaceIn(BaseModel):
-    camera_id: str
-    gallery_id: str
-    ts: str | None = None
-
-
 def _write_crop(camera_id: str, event_id: str, crop_bgr, entity_type: str = "vehicle") -> dict:
     from app.services.crops import persist
 
@@ -192,39 +186,6 @@ def ingest_confirm(body: ConfirmIn, user: User = Depends(require_user)) -> dict:
     }
     store.insert_detection(event)
     store.audit(user.username, "operator_confirm", f"{plate}@{cam['camera_id']}")
-    alert = matcher.on_detection(event)
-    return {"inserted": True, "event": event, "alert": alert}
-
-
-@router.post("/api/ingest/confirm-face")
-def ingest_confirm_face(body: ConfirmFaceIn, user: User = Depends(require_user)) -> dict:
-    assert_write(user)
-    cam = _camera_or_404(body.camera_id)
-    if (cam.get("ownership") or "") != "Own":
-        raise HTTPException(status_code=400, detail="confirm-face allowed only on Own cameras")
-    matcher.reload()
-    wl = matcher.match_face(body.gallery_id)
-    event = {
-        "event_id": str(uuid.uuid4()),
-        "entity_type": "person",
-        "entity_id": body.gallery_id,
-        "face_id": body.gallery_id,
-        "plate": "",
-        "plate_raw": "",
-        "confidence": 1.0,
-        "camera_id": cam["camera_id"],
-        "lat": cam.get("lat") or 0,
-        "lon": cam.get("lon") or 0,
-        "ts": body.ts or store.now_iso(),
-        "pts_ms": 0,
-        "crop_uri": "",
-        "category": (wl or {}).get("category") or "MISSING_ASSOCIATE",
-        "priority": (wl or {}).get("priority") or "HIGH",
-        "source_case_id": (wl or {}).get("source_case_id") or body.gallery_id,
-        "source": "operator_confirm",
-    }
-    store.insert_detection(event)
-    store.audit(user.username, "operator_confirm_face", f"{body.gallery_id}@{cam['camera_id']}")
     alert = matcher.on_detection(event)
     return {"inserted": True, "event": event, "alert": alert}
 

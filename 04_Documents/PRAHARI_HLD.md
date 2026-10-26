@@ -116,7 +116,7 @@ Phase-1 implemented (CPU, no GPU required):
 - **ANPR.** Sampled frame → plate box → Tesseract (or empty if the binary is absent) → Indian-plate normaliser (`^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{3,4}$`) → event with `source=anpr`. Operator confirm writes `source=operator_confirm`, confidence 1.0. Confirm is never labelled ANPR.
 - **Object detection.** Person, car, motorcycle, bus, truck, bicycle. OpenCV DNN when weights exist; deterministic skin-tone blob fallback so tests and the demo do not need a GPU. CSV: `GET /api/objects/report.csv`.
 - **Intrusion.** Person-in-ROI on `CAM-FCS-001` (Food & Civil Supplies godown). Wrapper on object boxes, not a fourth network. CRITICAL alert, 120 s dedupe.
-- **Lawful FRS.** Enrolled gallery of consented adults or synthetic fixtures, Own cameras only (`CAM-OWN-001`). Operator confirm-face exists. **Never** on government CCTV of unknown people (`cam04` and any `ownership=Gov`). Not AFIS, not NAFIS, not a live ministry biometric pipe.
+- **Lawful FRS.** Enrolled gallery of consented adults or synthetic fixtures, Own cameras only (`CAM-OWN-001`). Manual confirm-face was removed (Phase 0 of the face upgrade); a review queue replaces it in Phase 2. **Never** on government CCTV of unknown people (`cam04` and any `ownership=Gov`). Not AFIS, not NAFIS, not a live ministry biometric pipe.
 
 Cross-camera vehicle tracking in the PoC is plate sightings (`GET /api/track/{plate}`). Optional object `track_id` is per camera and resets on a scene cut.
 
@@ -255,7 +255,7 @@ Consume only. No publish, no gateway control API, no file download of `/stream/<
 | Onboard government + own feeds | `POST /api/cameras`, `POST /api/cameras/import`, `POST /api/cameras/sync-catalogue`, Onboard tab |
 | Unified viewing | Operations Leaflet map, `POST /api/sessions`, tokenised `GET /api/stream/{id}` (no RTSP in the browser) |
 | ANPR + timestamps | `POST /api/ingest/frame`, `POST /api/ingest/confirm`, `GET /api/detections` |
-| Objects + intrusion + lawful FRS | `POST /api/ingest/analyse`, `GET /api/objects/report.csv`, `POST /api/ingest/confirm-face` (Own cameras only) |
+| Objects + intrusion + lawful FRS | `POST /api/ingest/analyse`, `GET /api/objects/report.csv` |
 | Designated vehicle path | `GET /api/track/GJ01AB1234` + `GET /api/track/{plate}/report.csv` |
 | Watchlist + realtime alert | `GET/POST /api/watchlist`, `GET /api/alerts`, `POST /api/alerts/{id}/ack`, `WS /ws/alerts` |
 | 80k readiness | §5 (DESIGN TARGET) and §10 of this HLD |
@@ -278,7 +278,6 @@ Auth: HTTP Basic (judge / admin / home.viewer / auditor). Write routes 403 for v
 | POST | `/api/ingest/frame` | write, ANPR-only |
 | POST | `/api/ingest/analyse` | write, multi-engine |
 | POST | `/api/ingest/confirm` | write, `source=operator_confirm` |
-| POST | `/api/ingest/confirm-face` | write, Own cameras only |
 | GET | `/api/detections` | any role |
 | GET | `/api/objects/report.csv` | any role |
 | GET/POST | `/api/watchlist` | GET any; POST write; WL-001 cannot be deleted |
