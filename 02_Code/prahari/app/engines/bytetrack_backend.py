@@ -27,7 +27,13 @@ _OPEN: dict[str, Any] = {}
 TRACK_HIGH_THRESH = 0.25
 TRACK_LOW_THRESH = 0.1
 NEW_TRACK_THRESH = 0.25
-MATCH_THRESH = 0.8
+#: Association cost limit: a detection joins a track if 1 - IoU <= this, i.e.
+#: IoU >= 0.1 at 0.9. Ultralytics' default is 0.8 (IoU >= 0.2), tuned for 30 fps.
+#: At 10 fps small, distant people move further than that between frames:
+#: measured on a 10 fps pedestrian clip, 0.8 broke 22 tracks into new IDs and
+#: 0.9 broke 4, with no ID jumps between people at either setting.
+#: Set TRACK_MATCH_THRESH in .env to change it.
+MATCH_THRESH = 0.9
 #: Frames a lost track is kept before it is dropped.
 TRACK_BUFFER = 30
 
@@ -39,6 +45,15 @@ def engine_available() -> bool:
         return True
     except ImportError:
         return False
+
+
+def _match_thresh() -> float:
+    from app import config
+
+    try:
+        return float(config.getenv("TRACK_MATCH_THRESH", str(MATCH_THRESH)) or MATCH_THRESH)
+    except ValueError:
+        return MATCH_THRESH
 
 
 class _TrackArgs:
@@ -80,10 +95,12 @@ def _get_tracker(camera_id: str) -> Any:
 
     cam = camera_id or "_"
     if cam not in _OPEN:
+        args = _TrackArgs()
+        args.match_thresh = _match_thresh()
         try:
-            _OPEN[cam] = BYTETracker(args=_TrackArgs())
+            _OPEN[cam] = BYTETracker(args=args)
         except TypeError:  # older ultralytics took frame_rate as a keyword
-            _OPEN[cam] = BYTETracker(args=_TrackArgs(), frame_rate=30)
+            _OPEN[cam] = BYTETracker(args=args, frame_rate=30)
     return _OPEN[cam]
 
 

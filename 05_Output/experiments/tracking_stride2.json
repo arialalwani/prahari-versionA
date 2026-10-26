@@ -1,0 +1,285 @@
+{
+  "video": "vtest.avi",
+  "stride": 2,
+  "frames_read": 795,
+  "frames_processed": 398,
+  "ms_per_processed_frame": 177.7,
+  "effective_fps_cpu": 5.6,
+  "people_in_view": {
+    "mean": 5.72,
+    "max": 9
+  },
+  "unique_ids": 42,
+  "lifetime_frames": {
+    "median": 44.5,
+    "mean": 54.2,
+    "max": 182
+  },
+  "fragments": {
+    "threshold_frames": 5,
+    "count": 5,
+    "ids": [
+      20,
+      21,
+      31,
+      68,
+      117
+    ]
+  },
+  "ids_held_through_a_gap": 20,
+  "tracks": {
+    "1": {
+      "first": 0,
+      "last": 14,
+      "frames": 15,
+      "gaps": 0
+    },
+    "2": {
+      "first": 0,
+      "last": 58,
+      "frames": 37,
+      "gaps": 3
+    },
+    "3": {
+      "first": 0,
+      "last": 77,
+      "frames": 71,
+      "gaps": 1
+    },
+    "5": {
+      "first": 6,
+      "last": 187,
+      "frames": 182,
+      "gaps": 0
+    },
+    "7": {
+      "first": 10,
+      "last": 182,
+      "frames": 173,
+      "gaps": 0
+    },
+    "14": {
+      "first": 21,
+      "last": 78,
+      "frames": 58,
+      "gaps": 0
+    },
+    "15": {
+      "first": 21,
+      "last": 26,
+      "frames": 6,
+      "gaps": 0
+    },
+    "20": {
+      "first": 33,
+      "last": 33,
+      "frames": 1,
+      "gaps": 0
+    },
+    "21": {
+      "first": 35,
+      "last": 35,
+      "frames": 1,
+      "gaps": 0
+    },
+    "22": {
+      "first": 37,
+      "last": 51,
+      "frames": 15,
+      "gaps": 0
+    },
+    "23": {
+      "first": 40,
+      "last": 86,
+      "frames": 47,
+      "gaps": 0
+    },
+    "27": {
+      "first": 58,
+      "last": 110,
+      "frames": 53,
+      "gaps": 0
+    },
+    "30": {
+      "first": 62,
+      "last": 74,
+      "frames": 13,
+      "gaps": 0
+    },
+    "31": {
+      "first": 67,
+      "last": 68,
+      "frames": 2,
+      "gaps": 0
+    },
+    "35": {
+      "first": 71,
+      "last": 143,
+      "frames": 73,
+      "gaps": 0
+    },
+    "42": {
+      "first": 76,
+      "last": 125,
+      "frames": 22,
+      "gaps": 2
+    },
+    "44": {
+      "first": 78,
+      "last": 104,
+      "frames": 27,
+      "gaps": 0
+    },
+    "45": {
+      "first": 81,
+      "last": 109,
+      "frames": 28,
+      "gaps": 1
+    },
+    "48": {
+      "first": 84,
+      "last": 201,
+      "frames": 105,
+      "gaps": 3
+    },
+    "55": {
+      "first": 110,
+      "last": 157,
+      "frames": 46,
+      "gaps": 1
+    },
+    "56": {
+      "first": 111,
+      "last": 155,
+      "frames": 39,
+      "gaps": 1
+    },
+    "57": {
+      "first": 114,
+      "last": 201,
+      "frames": 88,
+      "gaps": 0
+    },
+    "63": {
+      "first": 149,
+      "last": 170,
+      "frames": 21,
+      "gaps": 1
+    },
+    "68": {
+      "first": 159,
+      "last": 162,
+      "frames": 4,
+      "gaps": 0
+    },
+    "69": {
+      "first": 159,
+      "last": 197,
+      "frames": 37,
+      "gaps": 1
+    },
+    "76": {
+      "first": 179,
+      "last": 261,
+      "frames": 82,
+      "gaps": 1
+    },
+    "84": {
+      "first": 203,
+      "last": 350,
+      "frames": 142,
+      "gaps": 3
+    },
+    "85": {
+      "first": 211,
+      "last": 289,
+      "frames": 77,
+      "gaps": 1
+    },
+    "86": {
+      "first": 231,
+      "last": 397,
+      "frames": 160,
+      "gaps": 2
+    },
+    "90": {
+      "first": 253,
+      "last": 281,
+      "frames": 29,
+      "gaps": 0
+    },
+    "91": {
+      "first": 253,
+      "last": 309,
+      "frames": 56,
+      "gaps": 1
+    },
+    "99": {
+      "first": 267,
+      "last": 397,
+      "frames": 131,
+      "gaps": 0
+    },
+    "102": {
+      "first": 283,
+      "last": 343,
+      "frames": 61,
+      "gaps": 0
+    },
+    "103": {
+      "first": 286,
+      "last": 372,
+      "frames": 69,
+      "gaps": 3
+    },
+    "104": {
+      "first": 304,
+      "last": 397,
+      "frames": 90,
+      "gaps": 3
+    },
+    "105": {
+      "first": 329,
+      "last": 361,
+      "frames": 33,
+      "gaps": 0
+    },
+    "109": {
+      "first": 345,
+      "last": 361,
+      "frames": 17,
+      "gaps": 0
+    },
+    "112": {
+      "first": 346,
+      "last": 397,
+      "frames": 47,
+      "gaps": 3
+    },
+    "116": {
+      "first": 350,
+      "last": 397,
+      "frames": 46,
+      "gaps": 1
+    },
+    "117": {
+      "first": 350,
+      "last": 350,
+      "frames": 1,
+      "gaps": 0
+    },
+    "119": {
+      "first": 353,
+      "last": 397,
+      "frames": 43,
+      "gaps": 1
+    },
+    "123": {
+      "first": 366,
+      "last": 397,
+      "frames": 29,
+      "gaps": 1
+    }
+  },
+  "note": "No ground truth: proxies only. Use labelled footage for IDF1/MOTA."
+}
