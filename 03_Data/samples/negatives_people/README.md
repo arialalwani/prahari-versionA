@@ -11,7 +11,8 @@ only this README is tracked.
 
     python scripts/negative_person_check.py --out ../../05_Output/experiments/phase0_negatives.json
 
-Open question: the brief also lists "close-up faces" as negatives. A close-up
-face is a real person, and YOLO correctly detects one (0.84 on a consented
-team photo), so close-up faces are not included here until that criterion is
-clarified.
+**Scenes with no humans only.** A close-up face is a real person and is
+correctly detected (0.84 on a consented team photo), so it does not belong
+here. Printed faces (posters, phone or laptop screens) are a separate
+documented test: see `../printed_faces/README.md` and
+`scripts/printed_face_check.py`.

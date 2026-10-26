@@ -1,0 +1,16 @@
+{
+  "test": "printed_faces",
+  "kind": "documented, not a gate",
+  "rows": [
+    {
+      "image": "printed_faces\\poster.webp",
+      "people": 1,
+      "confidences": [
+        0.62
+      ],
+      "intrusion": true
+    }
+  ],
+  "fired_on": 1,
+  "images": 1
+}

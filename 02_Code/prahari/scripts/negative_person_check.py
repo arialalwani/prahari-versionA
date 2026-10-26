@@ -1,13 +1,17 @@
-"""Phase 0 acceptance: images with no people must produce no people and no intrusion.
+"""Phase 0 acceptance: scenes with no humans must produce no people and no intrusion.
 
 Runs the real person detector (YOLO, as configured in OBJECT_ENGINE) and the
 intrusion check over:
 
-  * built-in synthetic negatives (plain walls, a skin-toned wall, noise, a
-    drawn face-like shape), always included, and
+  * built-in synthetic negatives from tests/negative_images.py (plain walls,
+    a skin-toned wall, noise, a drawn face-like shape), always included, and
   * every image in the negative folder(s) you pass, by default
     03_Data/samples/negatives_people/ (git-ignored; put empty rooms, walls,
-    vehicles without people and close-up faces there).
+    corridors and vehicles with nobody in frame there).
+
+The negative set is scenes with no humans only. A close-up face is a real
+person and is correctly detected, so it is not a negative. Printed faces
+(posters, screens) are a separate documented test: scripts/printed_face_check.py.
 
 Intrusion is checked against the worst case, a restricted zone covering the
 whole frame, so any person detection would count. Exit code 1 if any image

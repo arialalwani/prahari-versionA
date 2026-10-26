@@ -39,7 +39,9 @@ This brief replaces all of the above.
 | Manual "Confirm face" | Replace with the Match Review Queue (Section 7, Screen 3). |
 | Intrusion alerts | Fire only on YOLO person detections above a confidence threshold. Test restricted-zone logic separately. |
 
-**Acceptance:** A test set of empty rooms, walls, cars, and close-up faces produces zero invented person detections and zero false intrusion alerts.
+**Acceptance:** A negative set of scenes with no humans (empty rooms, walls, vehicles with nobody in frame) produces zero invented person detections and zero false intrusion alerts. A close-up face is a real person, so it is not a negative.
+
+**Printed faces** (posters, billboards, phone or laptop screens) are a separate, documented test: the detector's behaviour on them is recorded, and no suppression rule is added for them.
 
 ---
 
@@ -206,7 +208,7 @@ Inputs: cameras and time window. Output: ranked sightings with thumbnails; click
 
 | Phase | Deliverable | Acceptance |
 |---|---|---|
-| 0 | Unreliable logic removed | Zero invented detections on negative test set |
+| 0 | Unreliable logic removed | Zero invented detections on a negative set of scenes with no humans; printed faces documented separately |
 | 1 | SCRFD + ByteTrack + quality scoring live on Screen 1 | Stable track IDs, quality badges visible, blur on |
 | 2 | AdaFace + FAISS + watchlist + review queue (Screens 2, 3) | Calibrated bands, top-3 candidates, Confirm/Reject/Escalate working |
 | 3 | Body ReID + attributes + carried objects | Cross-camera linking working on own footage |
