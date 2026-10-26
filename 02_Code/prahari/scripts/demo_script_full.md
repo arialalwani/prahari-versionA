@@ -1,5 +1,7 @@
 # PRAHARI — full demo script
 
+> **Superseded.** Use `DEMO_VIDEO_SCRIPT.md` and `DEMO_GUIDE.md`. The face steps below (`a.png`, the 0.92 match, Confirm face) no longer work: the cartoon gallery and histogram face matching were removed in Phase 0 of the face upgrade.
+
 Every claim below was executed against the running app on 2026-09-05 and matched.
 Numbers marked *(pristine)* assume you ran the database reset in Part 0.
 

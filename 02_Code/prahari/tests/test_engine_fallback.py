@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 
 from app.services import faces as faces_mod
+from tests.synthetic_faces import write_fixture_pair
 from app.services.anpr import recognize
 from app.services.objects import detect
 from tests.test_objects import _person_blob
@@ -14,8 +15,8 @@ from tests.test_objects import _person_blob
 def test_facenet_without_torch_identifies_no_one(tmp_path, monkeypatch):
     monkeypatch.setenv("FACE_ENGINE", "facenet")
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
-    faces_mod.write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
-    faces_mod.write_fixture_pair(tmp_path / "faces", "WL-X", seed=99)
+    write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
+    write_fixture_pair(tmp_path / "faces", "WL-X", seed=99)
     faces_mod.load_gallery(force=True)
 
     def boom(*_a, **_k):

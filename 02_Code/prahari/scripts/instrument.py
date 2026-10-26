@@ -396,7 +396,7 @@ def p1_a(seconds: float, frames_per_cam: int, seed_n: int) -> dict[str, Any]:
 def p1_b(n_frames: int) -> dict[str, Any]:
     from app.engines import facenet_backend as fb
     from app.services.analyse import analyse, engines_for
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
     from app.services.provenance import faces_allowed
 
     registry_path = OUT / "prahari_real_registry.json"

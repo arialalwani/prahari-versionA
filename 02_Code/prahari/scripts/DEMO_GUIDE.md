@@ -134,15 +134,13 @@ The test images are all in:
 1. **Cameras** → find `CAM-OWN-001` → **Open**. It jumps to Operations and the clip plays with a LIVE badge.
 2. **Do not open the government cameras** (CAM-AHD-001 etc.). This machine has no live source for them and they return "stream error".
 
-### Test 8 — the face privacy rule (optional)
-1. **Onboard** → **Analyse this still**, Camera ID `CAM-OWN-001`, upload `02_Code\prahari\data\faces\WL-004\a.png`.
-2. **Expect:** a person match for `WL-004` at **0.92** and a HIGH alert.
-3. Change Camera ID to `CAM-AHD-001` (a government camera) and upload the same file.
-4. **Expect:** **no face result at all.** The server refuses to run face matching on government cameras.
-5. ⚠️ Say it this way: *"This demonstrates the privacy rule, not face-recognition accuracy."*
-   The current face engine is a **colour-histogram placeholder**, not a real face model
-   (see section 6). The "person" rows at exactly 0.50 in the same result come from a simple
-   skin-colour heuristic. Do not present them as object detection.
+### Test 8 — face identification is switched off (Phase 0 of the face upgrade)
+Face identification is **off** until a real recogniser is built (Phase 2). The old
+colour-histogram "matching" and its cartoon starter face were removed because they could not
+identify anyone. There is nothing to demo here yet.
+- **Analyse this still** on `CAM-OWN-001` with any photo produces **no face identity and no face alert**.
+- The privacy rule still holds: face processing never runs on government cameras.
+- "Person" results now come **only from YOLO**. The old skin-colour "person 0.50" rows are gone.
 
 ### Test 9 — coverage gaps
 - **Analytics & Gaps:** Dahod GSRTC depot is **offline**, and 8 cameras keep under 15 days of recording.

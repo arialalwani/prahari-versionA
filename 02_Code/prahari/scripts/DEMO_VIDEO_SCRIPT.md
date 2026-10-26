@@ -74,7 +74,7 @@ Speak slowly. Let each result sit on screen for a second before you talk over it
 >
 > "Facial recognition is sensitive, so we built the rules in first. Face matching only runs on cameras we own, and the server blocks it outright on government cameras. That rule is enforced in code, not left to policy. The high-accuracy face model plugs in behind this and is our next integration."
 
-*(Don't run a face match on camera: the test gallery is a cartoon face, and it would undercut the message.
+*(Face identification is switched off until the real recogniser lands (Phase 2), so there is no face match to run.
 If a judge asks, say: "the enrolment, detection and the own-camera rule work today; the production face model is the next integration.")*
 
 ---
@@ -178,7 +178,7 @@ If a judge asks, say: "the enrolment, detection and the own-camera rule work tod
 ## Never do on camera
 - **Don't click "Next cameras"** on Vehicle Track. It shows a wrong distance.
 - **Don't open any camera except `CAM-OWN-001`.** The others have no live feed on this machine.
-- **Don't run a face match or click Enroll.** The test gallery is a cartoon face, and enrolling permanently adds images.
+- **Don't click Enroll.** Face identification is off until Phase 2, and enrolling permanently adds images.
 - **Don't say "live video ANPR" or "connected to VAHAN".** Neither is built yet.
 - **Don't claim face-recognition accuracy.** Talk about the enrolment and the own-camera rule only.
 - **Don't say "X% accurate".** If asked, say *"on our 21-image test set, 61.5% of the plates we verified were correct, and we cut wrong plates from 9 to 5."*

@@ -11,7 +11,6 @@ os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw
 
 from app import config
 
@@ -27,42 +26,6 @@ def reset(camera_id: str | None = None) -> None:
         _tracks.pop(camera_id, None)
         return
     _tracks.clear()
-
-
-def _write_synthetic(path: Path, seed: int, shift: int = 0) -> None:
-    rng = np.random.default_rng(seed)
-    img = Image.new("RGB", (128, 128), (40, 40, 40))
-    draw = ImageDraw.Draw(img)
-    tone = (180 + (seed * 17) % 50, 130 + (seed * 11) % 40, 110 + (seed * 7) % 30)
-    cx, cy = 64 + shift, 70
-    draw.ellipse((cx - 40, cy - 50, cx + 40, cy + 50), fill=tone)
-    draw.ellipse((cx - 18, cy - 18, cx - 8, cy - 8), fill=(20, 20, 20))
-    draw.ellipse((cx + 8, cy - 18, cx + 18, cy - 8), fill=(20, 20, 20))
-    draw.arc((cx - 16, cy + 4, cx + 16, cy + 24), 20, 160, fill=(80, 40, 40), width=2)
-    noise = rng.integers(0, 40, (128, 128, 3), dtype=np.uint8)
-    arr = np.clip(np.array(img, dtype=np.int16) + noise, 0, 255).astype(np.uint8)
-    Image.fromarray(arr).save(path)
-
-
-def ensure_synthetic_gallery() -> None:
-    dest = config.face_dir() / "WL-004"
-    dest.mkdir(parents=True, exist_ok=True)
-    if not any(dest.glob("*.png")) and not any(dest.glob("*.jpg")):
-        _write_synthetic(dest / "a.png", seed=4)
-        _write_synthetic(dest / "b.png", seed=4, shift=2)
-    other = config.face_dir() / "WL-X"
-    other.mkdir(parents=True, exist_ok=True)
-    if not any(other.glob("*.png")):
-        _write_synthetic(other / "a.png", seed=99)
-
-
-def write_fixture_pair(root: Path, gallery_id: str, seed: int) -> tuple[Path, Path]:
-    folder = root / gallery_id
-    folder.mkdir(parents=True, exist_ok=True)
-    a, b = folder / "a.png", folder / "b.png"
-    _write_synthetic(a, seed=seed)
-    _write_synthetic(b, seed=seed, shift=2)
-    return a, b
 
 
 def _embed(bgr: np.ndarray) -> np.ndarray:
@@ -193,8 +156,7 @@ def _histogram_match(
 ) -> list[dict[str, Any]]:
     gal = gallery if gallery is not None else load_gallery()
     if not gal:
-        ensure_synthetic_gallery()
-        gal = load_gallery(force=True)
+        return []
     out: list[dict[str, Any]] = []
     threshold = float(config.getenv("FACE_MATCH_MIN_CONFIDENCE", str(config.FACE_MATCH_MIN_CONFIDENCE)))
     for x, y, w, h in _detect_boxes(frame_bgr):
@@ -222,9 +184,7 @@ def _facenet_match(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
     analyzer = get_analyzer()
     gal = _load_facenet_gallery()
     if not gal:
-        ensure_synthetic_gallery()
-        # embeddings may still be missing; histogram enroll images exist
-        gal = _load_facenet_gallery(force=True)
+        return []
     threshold = float(config.getenv("FACE_MATCH_MIN_CONFIDENCE", "0.5") or "0.5")
     out: list[dict[str, Any]] = []
     for face in analyzer.extract_faces(frame_bgr):

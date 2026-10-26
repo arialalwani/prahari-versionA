@@ -79,7 +79,8 @@ def run_smoke() -> list[dict]:
     import numpy as np
 
     from app.services.analyse import engines_for
-    from app.services.faces import match, write_fixture_pair
+    from app.services.faces import match
+    from tests.synthetic_faces import write_fixture_pair
     from app.services.intrusion import check
     from app.services.objects import detect
     from app.services.plates import normalise

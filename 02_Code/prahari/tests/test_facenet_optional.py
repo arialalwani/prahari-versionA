@@ -19,12 +19,13 @@ def _vision_ready() -> bool:
 def test_facenet_same_gallery_beats_other(tmp_path, monkeypatch):
     from app.engines.facenet_backend import cosine, get_analyzer, reset_analyzer
     from app.services import faces as faces_mod
+    from tests.synthetic_faces import write_fixture_pair
 
     monkeypatch.setenv("FACE_ENGINE", "facenet")
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
     reset_analyzer()
-    faces_mod.write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
-    faces_mod.write_fixture_pair(tmp_path / "faces", "WL-X", seed=99)
+    write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
+    write_fixture_pair(tmp_path / "faces", "WL-X", seed=99)
     analyzer = get_analyzer()
     a = faces_mod._embed  # histogram still exists
     assert a is not None

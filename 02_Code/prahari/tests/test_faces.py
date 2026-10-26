@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 
 from app.services import faces as faces_mod
+from tests.synthetic_faces import write_fixture_pair
 
 
 def test_histogram_never_identifies(tmp_path, monkeypatch):
@@ -15,7 +16,7 @@ def test_histogram_never_identifies(tmp_path, monkeypatch):
     monkeypatch.setenv("FACE_ENGINE", "histogram")
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
     root = Path(tmp_path / "faces")
-    faces_mod.write_fixture_pair(root, "WL-004", seed=4)
+    write_fixture_pair(root, "WL-004", seed=4)
     faces_mod.load_gallery(force=True)
     probe = cv2.imread(str(root / "WL-004" / "a.png"))
     assert faces_mod.match(probe) == []
@@ -25,7 +26,7 @@ def test_analyse_raises_no_face_alert_on_own_camera(client, auth, tmp_path, monk
     # The Own camera may run faces, but with no recogniser it must not
     # produce a person identity or an alert from an enrolled photo.
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
-    a, _ = faces_mod.write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
+    a, _ = write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
     faces_mod.load_gallery(force=True)
     res = client.post(
         "/api/ingest/analyse",
@@ -40,7 +41,7 @@ def test_analyse_raises_no_face_alert_on_own_camera(client, auth, tmp_path, monk
 
 
 def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
 
     a, _ = write_fixture_pair(tmp_path, "WL-004", seed=4)
     png = Path(a).read_bytes()
@@ -72,7 +73,7 @@ def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):
 
 
 def test_no_face_events_on_cam04(client, auth, tmp_path):
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
 
     a, _ = write_fixture_pair(tmp_path, "tmpface", seed=4)
     client.post(
@@ -101,7 +102,7 @@ def test_no_face_events_on_cam04(client, auth, tmp_path):
 
 
 def test_no_face_events_on_gov_ownership(client, auth, tmp_path):
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
 
     a, _ = write_fixture_pair(tmp_path, "tmpface", seed=4)
     png = Path(a).read_bytes()
@@ -118,7 +119,7 @@ def test_no_face_events_on_gov_ownership(client, auth, tmp_path):
 
 def test_unknown_face_no_alert(tmp_path, monkeypatch):
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
-    faces_mod.write_fixture_pair(Path(tmp_path / "faces"), "WL-004", seed=4)
+    write_fixture_pair(Path(tmp_path / "faces"), "WL-004", seed=4)
     faces_mod.load_gallery(force=True)
     blank = np.zeros((128, 128, 3), dtype=np.uint8)
     blank[:] = (10, 10, 10)

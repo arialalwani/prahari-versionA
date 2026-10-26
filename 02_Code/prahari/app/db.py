@@ -323,12 +323,6 @@ def init_db() -> None:
         conn.commit()
     finally:
         conn.close()
-    try:
-        from app.services import faces
-
-        faces.ensure_synthetic_gallery()
-    except Exception:
-        pass
 
 
 def count_table(name: str) -> int:

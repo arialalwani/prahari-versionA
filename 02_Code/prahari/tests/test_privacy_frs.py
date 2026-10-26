@@ -16,7 +16,7 @@ def test_facenet_not_constructed_on_cam04(client, auth, monkeypatch, tmp_path):
     """T-V04: FACE_ENGINE=facenet still must not construct FaceAnalyzer on cam04."""
     monkeypatch.setenv("FACE_ENGINE", "facenet")
     from app.engines import facenet_backend as fb
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
 
     fb.reset_analyzer()
     calls = {"n": 0}
@@ -61,7 +61,7 @@ def test_enroll_refuses_gov_camera(client, auth, tmp_path, monkeypatch):
     """C3: enroll consults the provenance gate before FaceAnalyzer construction."""
     monkeypatch.setenv("FACE_ENGINE", "facenet")
     from app.engines import facenet_backend as fb
-    from app.services.faces import write_fixture_pair
+    from tests.synthetic_faces import write_fixture_pair
 
     fb.reset_analyzer()
     calls = {"n": 0}
