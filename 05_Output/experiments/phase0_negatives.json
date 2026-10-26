@@ -1,0 +1,53 @@
+{
+  "rows": [
+    {
+      "image": "synthetic/grey_wall",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "synthetic/white_wall",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "synthetic/skin_toned_wall",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "synthetic/noise",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "synthetic/drawn_face_closeup",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "negatives_people\\scooter_hand_only.jpg",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "negatives_people\\vehicle_mini_no_people.png",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    },
+    {
+      "image": "negatives_people\\vehicle_rangerover_no_people.jpg",
+      "people": 0,
+      "confidences": [],
+      "intrusion": false
+    }
+  ],
+  "passed": true
+}
