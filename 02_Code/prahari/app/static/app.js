@@ -399,10 +399,12 @@ function openTrackingTile(cameraId, cam, token) {
       if (!r.ok) return;
       const s = await r.json();
       if (!s.running && !s.frame) return;
-      const ids = (s.ids || []).map((id) => "<span class='id-chip'>ID " + esc(id) + "</span>").join("");
+      const people = s.tracked || (s.ids || []).map((id) => ({ id, face: null }));
+      const ids = people.map((p) => "<span class='id-chip'>ID " + esc(p.id) +
+        (p.face ? " <span class='q q-" + esc(p.face.toLowerCase()) + "'>" + esc(p.face) + "</span>" : "") + "</span>").join("");
       line.innerHTML = "<strong>" + esc(s.people) + " " + (s.people === 1 ? "person" : "people") + " in view</strong> " +
         (ids || "<span class='muted'>no one in view</span>") +
-        "<span class='track-meta'>" + esc(s.ids_seen) + " IDs so far · " + esc(s.ms_per_frame) + " ms/frame</span>";
+        "<span class='track-meta'>" + (s.blur ? "faces blurred · " : "") + esc(s.ids_seen) + " IDs so far · " + esc(s.ms_per_frame) + " ms/frame</span>";
     } catch (e) { /* the next poll retries */ }
   };
   wrap._poll = setInterval(poll, 1000);

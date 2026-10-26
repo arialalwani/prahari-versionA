@@ -77,6 +77,8 @@ def test_stream_yields_jpeg_frames_and_publishes_ids(client, auth, clip, monkeyp
     assert state["running"] is False  # finished
     assert state["people"] == 1 and len(state["ids"]) == 1
     assert state["ids_seen"] == 1  # one walker, one stable ID
+    assert state["blur"] is True  # privacy default
+    assert [p["id"] for p in state["tracked"]] == state["ids"]
 
 
 @pytest.mark.skipif(not engine_available(), reason="ultralytics ByteTrack missing")

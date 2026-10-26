@@ -24,6 +24,7 @@ from typing import Any, Iterator
 
 import cv2
 
+from app.services import track_faces
 from app.services.overlay import draw_tracks
 from app.services.person_tracking import PersonTracker
 
@@ -87,14 +88,21 @@ def mjpeg(camera_id: str, path: Path, loop: bool = True, max_frames: int | None 
                 clock_zero = started - pts
             tracks = tracker.process(frame)
             seen_ids.update(t["track_id"] for t in tracks)
-            # Counts are shown in the tile's status line, not drawn on the frame,
-            # where the tile header would cover them.
-            img = draw_tracks(frame, tracks)
+            # Faces are found per person, blurred on the server (privacy by
+            # default), then IDs and quality badges are drawn. Counts are shown
+            # in the tile's status line, not on the frame.
+            faces = track_faces.find_faces(frame, tracks)
+            shown = track_faces.blur(frame, tracks, faces) if track_faces.blur_enabled() else frame
+            img = draw_tracks(shown, tracks, faces=faces)
             ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
             proc_ms = 0.9 * proc_ms + 0.1 * (1000 * (time.perf_counter() - started)) if sent else \
                 1000 * (time.perf_counter() - started)
             _publish(camera_id, running=True, frame=frame_no, people=len(tracks),
                      ids=sorted(t["track_id"] for t in tracks), ids_seen=len(seen_ids),
+                     tracked=[{"id": t["track_id"],
+                               "face": (faces[t["track_id"]]["quality"]["band"] if t["track_id"] in faces else None)}
+                              for t in sorted(tracks, key=lambda t: t["track_id"])],
+                     faces_found=len(faces), blur=track_faces.blur_enabled(),
                      ms_per_frame=round(proc_ms, 1), video_seconds=round(pts, 1))
             if ok:
                 data = buf.tobytes()
