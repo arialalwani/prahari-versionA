@@ -299,7 +299,11 @@ function renderCamTable(rows) {
 function syncSlots() {
   const wall = $("wall");
   wall.querySelectorAll(".slot").forEach((s) => s.remove());
-  for (let i = tiles.size; i < MAX_TILES; i++) {
+  // A people-tracking tile spans the full row, so keep the empty slots to an
+  // even number and the grid tidy. The x / 4 counter still shows real capacity.
+  let free = MAX_TILES - tiles.size;
+  if (wall.querySelector(".tile.tracking") && free % 2) free -= 1;
+  for (let i = MAX_TILES - free; i < MAX_TILES; i++) {
     const s = document.createElement("div");
     s.className = "slot";
     s.innerHTML = icon("camera") + "<span>SLOT " + (i + 1) + " · NO SIGNAL</span>";
@@ -334,6 +338,10 @@ async function openTile(cameraId, jump) {
     return;
   }
   const token = cam.playback.token;
+  if (cam.playback && cam.playback.kind === "tracking") {
+    openTrackingTile(cameraId, cam, token);
+    return;
+  }
   const url = "/api/stream/" + encodeURIComponent(cameraId) + "?token=" + encodeURIComponent(token);
   const wrap = document.createElement("div");
   wrap.className = "tile";
@@ -355,6 +363,53 @@ async function openTile(cameraId, jump) {
   video.onerror = () => { $("tile-err").textContent = cameraId + ": the stream could not be played."; };
   wrap.querySelector("[data-x]").onclick = async () => {
     if (wrap._hls) wrap._hls.destroy();
+    await api("/api/sessions/" + encodeURIComponent(cameraId), { method: "DELETE" });
+    wrap.remove();
+    tiles.delete(cameraId);
+    syncSlots();
+  };
+  const firstSlot = $("wall").querySelector(".slot");
+  $("wall").insertBefore(wrap, firstSlot);
+  tiles.set(cameraId, wrap);
+  $("tile-empty").textContent = "";
+  syncSlots();
+  tickClock();
+}
+
+// People-tracking tile: the server streams frames with person boxes and
+// stable IDs already drawn on (MJPEG in an <img>), so boxes stay in sync with
+// the picture whatever the video format. A status line under it lists the
+// people in view, refreshed every second.
+function openTrackingTile(cameraId, cam, token) {
+  const wrap = document.createElement("div");
+  wrap.className = "tile tracking";
+  wrap.innerHTML = "<p><span class='rec'>TRACKING</span><span class='tile-name'>" + esc(cameraId) + "</span> <button data-x title='Close tile'>Close</button></p>" +
+    "<img class='track-feed' alt='" + esc(cameraId) + " with tracked people'>" +
+    "<span class='osd'>" + esc(cam.location || cam.department || "") + " · <span class='osd-time'></span></span>" +
+    "<div class='track-ids' aria-live='polite'><span class='spinner' aria-hidden='true'></span> Starting person tracking… the first frame loads the detector.</div>";
+  const img = wrap.querySelector("img");
+  const line = wrap.querySelector(".track-ids");
+  img.src = "/api/track-stream/" + encodeURIComponent(cameraId) + "?token=" + encodeURIComponent(token);
+  img.onerror = () => {
+    if (wrap.isConnected) $("tile-err").textContent = cameraId + ": the tracking stream stopped. Close the tile and open it again.";
+  };
+  const poll = async () => {
+    try {
+      const r = await api("/api/track-stream/" + encodeURIComponent(cameraId) + "/state");
+      if (!r.ok) return;
+      const s = await r.json();
+      if (!s.running && !s.frame) return;
+      const ids = (s.ids || []).map((id) => "<span class='id-chip'>ID " + esc(id) + "</span>").join("");
+      line.innerHTML = "<strong>" + esc(s.people) + " " + (s.people === 1 ? "person" : "people") + " in view</strong> " +
+        (ids || "<span class='muted'>no one in view</span>") +
+        "<span class='track-meta'>" + esc(s.ids_seen) + " IDs so far · " + esc(s.ms_per_frame) + " ms/frame</span>";
+    } catch (e) { /* the next poll retries */ }
+  };
+  wrap._poll = setInterval(poll, 1000);
+  wrap.querySelector("[data-x]").onclick = async () => {
+    clearInterval(wrap._poll);
+    img.onerror = null;
+    img.removeAttribute("src");  // drops the connection, which stops the server's tracker
     await api("/api/sessions/" + encodeURIComponent(cameraId), { method: "DELETE" });
     wrap.remove();
     tiles.delete(cameraId);

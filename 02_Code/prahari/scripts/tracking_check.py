@@ -33,33 +33,12 @@ sys.path.insert(0, str(ROOT))
 import cv2  # noqa: E402
 import numpy as np  # noqa: E402
 
+from app.services.overlay import draw_tracks  # noqa: E402
 from app.services.person_tracking import PersonTracker  # noqa: E402
 
 DEFAULT_VIDEO = ROOT.parents[1] / "03_Data" / "recordings" / "pedestrians" / "vtest.avi"
 DEFAULT_SNAPS = ROOT.parents[1] / "05_Output" / "experiments" / "tracking_snapshots"
 FRAGMENT_FRAMES = 5
-_PALETTE = [(66, 135, 245), (245, 130, 48), (60, 180, 75), (230, 25, 75), (145, 30, 180),
-            (70, 240, 240), (240, 50, 230), (210, 245, 60), (0, 128, 128), (170, 110, 40)]
-
-
-def _colour(track_id: int) -> tuple[int, int, int]:
-    return _PALETTE[track_id % len(_PALETTE)]
-
-
-def annotate(frame: np.ndarray, tracks: list[dict], frame_index: int) -> np.ndarray:
-    out = frame.copy()
-    for t in tracks:
-        x, y, w, h = [int(round(v)) for v in t["bbox"]]
-        c = _colour(t["track_id"])
-        cv2.rectangle(out, (x, y), (x + w, y + h), c, 2)
-        label = f"ID {t['track_id']}"
-        cv2.rectangle(out, (x, y - 18), (x + 8 + 9 * len(label), y), c, -1)
-        cv2.putText(out, label, (x + 4, y - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-    cv2.putText(out, f"frame {frame_index}  people {len(tracks)}", (8, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
-                (255, 255, 255), 2, cv2.LINE_AA)
-    return out
-
-
 def run(video: Path, stride: int, max_frames: int | None, snaps_dir: Path | None, snap_every: int) -> dict:
     cap = cv2.VideoCapture(str(video))
     if not cap.isOpened():
@@ -85,7 +64,7 @@ def run(video: Path, stride: int, max_frames: int | None, snaps_dir: Path | None
             per_frame_people.append(len(tracks))
             processed += 1
         if snaps_dir and frame_index % snap_every == 0:
-            img = annotate(frame, tracks, frame_index)
+            img = draw_tracks(frame, tracks, f"frame {frame_index}  people {len(tracks)}")
             cv2.imwrite(str(snaps_dir / f"frame_{frame_index:04d}.jpg"), img)
             snaps.append(img)
         frame_index += 1

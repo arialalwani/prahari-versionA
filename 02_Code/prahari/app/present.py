@@ -22,6 +22,11 @@ def playback_for(camera: dict[str, Any], actor: str) -> dict[str, Any]:
                 "token": token,
                 "reason": "Drop own_feed.mp4 into 03_Data/recordings",
             }
+        from app.services.tracking_stream import is_tracking_camera
+
+        if is_tracking_camera(camera):
+            # Served as an MJPEG stream with person boxes and IDs drawn on it.
+            return {"kind": "tracking", "token": token}
         return {"kind": "file", "token": token}
     if camera.get("hls"):
         return {"kind": "hls", "token": token}

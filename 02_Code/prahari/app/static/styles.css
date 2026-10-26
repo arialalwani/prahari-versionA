@@ -824,3 +824,17 @@ details#predict-box { margin-top: 12px; }
 input.filled { animation: filled 1.6s ease-out; }
 @keyframes filled { from { background: var(--tint-high); border-color: var(--khaki); } to { background: var(--field); } }
 select { cursor: pointer; }
+
+/* People-tracking tile: annotated MJPEG from the server plus a live ID line. */
+.tile.tracking { grid-column: 1 / -1; aspect-ratio: auto; display: flex; flex-direction: column; }
+.tile.tracking .osd { display: none; }
+.track-feed { display: block; width: 100%; height: auto; min-height: 160px; background: #000; }
+.track-ids {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 8px 10px; font-size: 12px; color: #e6ebf2; background: #0b111c;
+}
+.track-ids strong { font-weight: 600; margin-right: 4px; }
+.track-ids .muted { color: #9aa6bd; }
+.track-ids .spinner { width: 14px; height: 14px; border-color: rgba(255, 255, 255, 0.2); border-top-color: #e6ebf2; }
+.id-chip { font: 600 11px var(--mono); padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); }
+.track-meta { margin-left: auto; color: #9aa6bd; font-family: var(--mono); font-size: 11px; }
