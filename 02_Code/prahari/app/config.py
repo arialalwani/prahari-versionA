@@ -56,6 +56,8 @@ ANPR_ENGINE = getenv("ANPR_ENGINE", "tesseract")
 STREAM_TOKEN_TTL_S = int(getenv("STREAM_TOKEN_TTL_S", "60") or "60")
 ANALYTICS_ENGINES = getenv("ANALYTICS_ENGINES", "anpr,objects")
 OBJECT_ENGINE = getenv("OBJECT_ENGINE", "yolo")
+# Intrusion fires only on a YOLO person at or above this confidence.
+INTRUSION_MIN_CONFIDENCE = float(getenv("INTRUSION_MIN_CONFIDENCE", "0.5") or "0.5")
 OBJECT_MIN_CONFIDENCE = float(getenv("OBJECT_MIN_CONFIDENCE", "0.45") or "0.45")
 FACE_ENGINE = getenv("FACE_ENGINE", "histogram")
 FACE_MATCH_MIN_CONFIDENCE = float(getenv("FACE_MATCH_MIN_CONFIDENCE", "0.55") or "0.55")

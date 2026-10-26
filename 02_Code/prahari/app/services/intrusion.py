@@ -51,23 +51,43 @@ def _person_area_in_roi(bbox: list[int], roi: list, frame_shape: tuple[int, ...]
     return inter / area
 
 
+#: Share of the person's box that must lie inside the restricted zone.
+ZONE_OVERLAP = 0.30
+
+
+def eligible(obj: dict[str, Any], min_confidence: float | None = None) -> bool:
+    """A detection may raise an intrusion only if YOLO found a person confidently.
+
+    Anything else (another class, a detection with no YOLO provenance, or a
+    weak score) is not evidence of a person and must not raise a CRITICAL alert.
+    """
+    from app import config
+
+    threshold = config.INTRUSION_MIN_CONFIDENCE if min_confidence is None else min_confidence
+    if (obj.get("object_class") or "") != "person":
+        return False
+    if obj.get("detector") != "yolo":
+        return False
+    return float(obj.get("confidence") or 0.0) >= threshold
+
+
 def check(frame_bgr: np.ndarray, camera: dict, object_events: list[dict[str, Any]]) -> dict[str, Any] | None:
     roi = roi_of(camera)
     if roi is None or frame_bgr is None:
         return None
     for obj in object_events:
-        if (obj.get("object_class") or "") != "person":
+        if not eligible(obj):
             continue
         bbox = obj.get("bbox") or [0, 0, 0, 0]
         overlap = _person_area_in_roi(bbox, roi, frame_bgr.shape)
-        if overlap >= 0.30:
+        if overlap >= ZONE_OVERLAP:
             return {
                 "entity_type": "intrusion",
                 "entity_id": camera.get("camera_id") or "",
                 "object_class": "person",
                 "category": "INTRUSION",
                 "priority": "CRITICAL",
-                "confidence": float(obj.get("confidence") or 0.5),
+                "confidence": float(obj["confidence"]),
                 "bbox": bbox,
                 "crop_bgr": obj.get("crop_bgr"),
                 "source": "intrusion",
