@@ -86,11 +86,6 @@ def _yolo_detect(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
     return detect_objects(frame_bgr)
 
 
-def _center(bbox: list[int]) -> tuple[float, float]:
-    x, y, w, h = bbox
-    return x + w / 2.0, y + h / 2.0
-
-
 def _assign_bytetrack(camera_id: str, hits: list[dict[str, Any]]) -> bool:
     from app.engines.bytetrack_backend import update as bt_update
 
@@ -107,21 +102,12 @@ def _assign_bytetrack(camera_id: str, hits: list[dict[str, Any]]) -> bool:
     tracks = bt_update(camera_id, dets)
     if not tracks:
         return False
-    used: set[int] = set()
-    for hit in hits:
-        cx, cy = _center(hit["bbox"])
-        best_i, best = -1, 1e18
-        for i, tr in enumerate(tracks):
-            if i in used:
-                continue
-            x1, y1, x2, y2 = tr["box"]
-            tcx, tcy = (x1 + x2) / 2.0, (y1 + y2) / 2.0
-            dist = (cx - tcx) ** 2 + (cy - tcy) ** 2
-            if dist < best:
-                best, best_i = dist, i
-        if best_i >= 0:
-            used.add(best_i)
-            hit["track_id"] = f"{camera_id or '_'}-bt-{tracks[best_i]['track_id']}"
+    # ByteTrack reports which input detection each track matched (det_index),
+    # so no nearest-centre guessing is needed.
+    by_det = {tr["det_index"]: tr["track_id"] for tr in tracks}
+    for i, hit in enumerate(hits):
+        if i in by_det:
+            hit["track_id"] = f"{camera_id or '_'}-bt-{by_det[i]}"
         else:
             hit["track_id"] = _assign_track(camera_id, hit["bbox"], hit["object_class"])
     return True

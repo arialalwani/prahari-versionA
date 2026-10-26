@@ -1,4 +1,14 @@
-"""Lazy ByteTrack. torch/ultralytics imported only inside update()."""
+"""Lazy ByteTrack (Ultralytics implementation). ultralytics is imported only on first use.
+
+One tracker per camera. Call update() once per processed frame, including
+frames with no detections: ByteTrack ages lost tracks frame by frame, so
+skipping empty frames would keep dead tracks alive too long.
+
+Ultralytics >= 8.1 expects a results-like object (conf, cls, xywh, boolean
+indexing) and returns rows [x1, y1, x2, y2, track_id, score, cls, det_index].
+An earlier version of this module passed a raw tensor and read STrack.tlbr,
+which no longer exists, so it silently returned no tracks.
+"""
 
 from __future__ import annotations
 
@@ -11,6 +21,16 @@ log = logging.getLogger("prahari.bytetrack")
 
 _OPEN: dict[str, Any] = {}
 
+#: ByteTrack thresholds. Detections above HIGH start and extend tracks; those
+#: between LOW and HIGH only extend existing tracks (ByteTrack's second pass),
+#: which is why the detector should run with a low threshold when tracking.
+TRACK_HIGH_THRESH = 0.25
+TRACK_LOW_THRESH = 0.1
+NEW_TRACK_THRESH = 0.25
+MATCH_THRESH = 0.8
+#: Frames a lost track is kept before it is dropped.
+TRACK_BUFFER = 30
+
 
 def engine_available() -> bool:
     try:
@@ -22,17 +42,35 @@ def engine_available() -> bool:
 
 
 class _TrackArgs:
-    # ultralytics >= 8.4 takes frame_rate on args; older builds took it as a
-    # BYTETracker keyword. Both are handled in _get_tracker.
-    track_thresh = 0.25
-    track_high_thresh = 0.25
-    track_low_thresh = 0.1
-    new_track_thresh = 0.25
-    track_buffer = 30
-    match_thresh = 0.8
-    fuse_score = False
+    tracker_type = "bytetrack"
+    track_high_thresh = TRACK_HIGH_THRESH
+    track_low_thresh = TRACK_LOW_THRESH
+    new_track_thresh = NEW_TRACK_THRESH
+    track_buffer = TRACK_BUFFER
+    match_thresh = MATCH_THRESH
+    fuse_score = True
     frame_rate = 30
     mot20 = False
+
+
+class _Detections:
+    """Minimal results-like container: what BYTETracker.update reads."""
+
+    def __init__(self, xyxy: np.ndarray, conf: np.ndarray, cls: np.ndarray) -> None:
+        self.xyxy = xyxy.reshape(-1, 4).astype(np.float32)
+        self.conf = conf.reshape(-1).astype(np.float32)
+        self.cls = cls.reshape(-1).astype(np.float32)
+
+    @property
+    def xywh(self) -> np.ndarray:
+        x1, y1, x2, y2 = self.xyxy.T
+        return np.stack([(x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1], axis=1)
+
+    def __len__(self) -> int:
+        return len(self.conf)
+
+    def __getitem__(self, index: Any) -> "_Detections":
+        return _Detections(self.xyxy[index], self.conf[index], self.cls[index])
 
 
 def _get_tracker(camera_id: str) -> Any:
@@ -44,64 +82,60 @@ def _get_tracker(camera_id: str) -> Any:
     if cam not in _OPEN:
         try:
             _OPEN[cam] = BYTETracker(args=_TrackArgs())
-        except TypeError:
+        except TypeError:  # older ultralytics took frame_rate as a keyword
             _OPEN[cam] = BYTETracker(args=_TrackArgs(), frame_rate=30)
     return _OPEN[cam]
 
 
+def _parse(item: Any) -> tuple[list[float], float, int] | None:
+    if isinstance(item, dict):
+        box, conf, cls_id = item.get("box") or [], item.get("conf", item.get("confidence")), item.get("cls_id")
+    else:
+        box, conf, cls_id = list(getattr(item, "box", []) or []), getattr(item, "conf", 0), getattr(item, "cls_id", 0)
+    if len(box) != 4:
+        return None
+    return [float(v) for v in box], float(conf or 0.0), int(cls_id or 0)
+
+
 def update(camera_id: str, detections: list[Any]) -> list[dict[str, Any]]:
-    """detections: dicts with box [x1,y1,x2,y2], conf, cls_id — or objects with those attrs."""
+    """Advance the camera's tracker by one frame.
+
+    detections: dicts (or objects) with box [x1, y1, x2, y2], conf, cls_id.
+    Returns active tracks: track_id, box [x1, y1, x2, y2], confidence, cls_id,
+    and det_index, the position in `detections` of the box that matched.
+    """
     tracker = _get_tracker(camera_id)
-    if not tracker or not detections:
+    if tracker is None:
         return []
+    parsed = [p for p in (_parse(d) for d in detections or []) if p is not None]
+    if parsed:
+        dets = _Detections(
+            np.array([p[0] for p in parsed]), np.array([p[1] for p in parsed]), np.array([p[2] for p in parsed])
+        )
+    else:
+        dets = _Detections(np.zeros((0, 4)), np.zeros(0), np.zeros(0))
     try:
-        import torch
-    except ImportError:
-        return []
-    arr = []
-    for item in detections:
-        if isinstance(item, dict):
-            box = item.get("box") or []
-            conf = float(item.get("conf") or item.get("confidence") or 0)
-            cls_id = int(item.get("cls_id") or 0)
-        else:
-            box = list(getattr(item, "box", []) or [])
-            conf = float(getattr(item, "conf", 0) or 0)
-            cls_id = int(getattr(item, "cls_id", 0) or 0)
-        if len(box) != 4:
-            continue
-        x1, y1, x2, y2 = [float(v) for v in box]
-        arr.append([x1, y1, x2, y2, conf, cls_id])
-    if not arr:
-        return []
-    det_tensor = torch.tensor(arr, dtype=torch.float32)
-    img = np.zeros((1080, 1920, 3), dtype=np.uint8)
-    try:
-        tracks = tracker.update(det_tensor, img)
+        rows = tracker.update(dets)
     except Exception as exc:
         log.warning("ByteTrack update failed: %s", exc)
         return []
-    results: list[dict[str, Any]] = []
-    for track in tracks:
-        if hasattr(track, "is_activated") and not track.is_activated:
-            continue
-        tlbr = getattr(track, "tlbr", None)
-        if tlbr is None:
-            continue
-        results.append(
+    out: list[dict[str, Any]] = []
+    for row in np.asarray(rows).reshape(-1, 8) if len(rows) else []:
+        x1, y1, x2, y2, track_id, score, cls_id, det_index = row.tolist()
+        out.append(
             {
-                "track_id": int(track.track_id),
-                "box": [float(tlbr[0]), float(tlbr[1]), float(tlbr[2]), float(tlbr[3])],
-                "confidence": float(getattr(track, "score", 1.0) or 1.0),
-                "cls_id": int(getattr(track, "cls", 0) or 0),
+                "track_id": int(track_id),
+                "box": [x1, y1, x2, y2],
+                "confidence": float(score),
+                "cls_id": int(cls_id),
+                "det_index": int(det_index),
             }
         )
-    return results
+    return out
 
 
 def reset(camera_id: str | None = None) -> None:
     if camera_id:
         _OPEN.pop(camera_id, None)
-        _OPEN.pop(camera_id or "_", None)
         return
     _OPEN.clear()

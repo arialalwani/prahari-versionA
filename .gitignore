@@ -93,3 +93,6 @@ Thumbs.db
 # Printed-face test images stay local; only the README is tracked
 03_Data/samples/printed_faces/*
 !03_Data/samples/printed_faces/README.md
+
+# Third-party pedestrian test footage (research use only) stays local
+03_Data/recordings/pedestrians/
