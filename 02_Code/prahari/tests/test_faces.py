@@ -9,20 +9,34 @@ import numpy as np
 from app.services import faces as faces_mod
 
 
-def test_same_gallery_matches_other_rejects(tmp_path, monkeypatch):
+def test_histogram_never_identifies(tmp_path, monkeypatch):
+    # Even an exact copy of an enrolled image is not identified: colour
+    # histograms are not face recognition, so they may not name anyone.
+    monkeypatch.setenv("FACE_ENGINE", "histogram")
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
     root = Path(tmp_path / "faces")
     faces_mod.write_fixture_pair(root, "WL-004", seed=4)
-    faces_mod.write_fixture_pair(root, "WL-X", seed=99)
     faces_mod.load_gallery(force=True)
     probe = cv2.imread(str(root / "WL-004" / "a.png"))
-    hits = faces_mod.match(probe)
-    assert hits
-    assert hits[0]["face_id"] == "WL-004"
-    other = cv2.imread(str(root / "WL-X" / "a.png"))
-    other_hits = faces_mod.match(other)
-    assert other_hits
-    assert other_hits[0]["face_id"] != "WL-004"
+    assert faces_mod.match(probe) == []
+
+
+def test_analyse_raises_no_face_alert_on_own_camera(client, auth, tmp_path, monkeypatch):
+    # The Own camera may run faces, but with no recogniser it must not
+    # produce a person identity or an alert from an enrolled photo.
+    monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
+    a, _ = faces_mod.write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
+    faces_mod.load_gallery(force=True)
+    res = client.post(
+        "/api/ingest/analyse",
+        files={"file": ("face.png", BytesIO(Path(a).read_bytes()), "image/png")},
+        data={"camera_id": "CAM-OWN-001", "engines": "faces"},
+        auth=auth,
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert [e for e in body["events"] if e.get("entity_type") == "person"] == []
+    assert body["alerts"] == []
 
 
 def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):

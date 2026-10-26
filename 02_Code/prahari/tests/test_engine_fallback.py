@@ -11,7 +11,7 @@ from app.services.objects import detect
 from tests.test_objects import _person_blob
 
 
-def test_facenet_without_torch_falls_back_to_histogram(tmp_path, monkeypatch):
+def test_facenet_without_torch_identifies_no_one(tmp_path, monkeypatch):
     monkeypatch.setenv("FACE_ENGINE", "facenet")
     monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
     faces_mod.write_fixture_pair(tmp_path / "faces", "WL-004", seed=4)
@@ -23,10 +23,8 @@ def test_facenet_without_torch_falls_back_to_histogram(tmp_path, monkeypatch):
 
     monkeypatch.setattr("app.engines.facenet_backend.get_analyzer", boom)
     probe = cv2.imread(str(tmp_path / "faces" / "WL-004" / "a.png"))
-    hits = faces_mod.match(probe)
-    assert isinstance(hits, list)
-    assert hits
-    assert hits[0]["face_id"] == "WL-004"
+    # A failed FaceNet no longer falls back to histogram "matching".
+    assert faces_mod.match(probe) == []
 
 
 def test_yolo_object_engine_without_ultralytics_falls_back(monkeypatch):

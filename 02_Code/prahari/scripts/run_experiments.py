@@ -108,7 +108,8 @@ def run_smoke() -> list[dict]:
             rec.update(ok=True, skipped=True, skip_reason=f"tesseract absent: {exc}")
     records.append(rec)
 
-    rec = _base("E-O1", command="detect(person_blob)")
+    # Phase 0: a skin-coloured patch must NOT become a person (fallback removed).
+    rec = _base("E-O1", command="detect(person_blob) invents no person")
     img = Image.new("RGB", (640, 360), (90, 90, 90))
     draw = ImageDraw.Draw(img)
     draw.rectangle((260, 140, 380, 360), fill=(210, 170, 140))
@@ -118,10 +119,11 @@ def run_smoke() -> list[dict]:
     frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     hits = detect(frame)
     rec["metrics"] = {"n": len(hits), "classes": [h["object_class"] for h in hits]}
-    rec["ok"] = any(h["object_class"] == "person" for h in hits)
+    rec["ok"] = not any(h["object_class"] == "person" for h in hits)
     records.append(rec)
 
-    rec = _base("E-F1", command="synthetic gallery match")
+    # Phase 0: histogram identification is disabled; even a gallery copy is not named.
+    rec = _base("E-F1", command="histogram identification disabled")
     dest = OUT / "face_fixtures"
     write_fixture_pair(dest, "WL-004", seed=4)
     write_fixture_pair(dest, "WL-X", seed=99)
@@ -132,12 +134,12 @@ def run_smoke() -> list[dict]:
     probe = cv2.imread(str(dest / "WL-004" / "a.png"))
     hits = match(probe)
     rec["metrics"] = {"face_id": (hits[0]["face_id"] if hits else "")}
-    rec["ok"] = bool(hits and hits[0]["face_id"] == "WL-004")
+    rec["ok"] = not any(h.get("face_id") for h in hits)
     records.append(rec)
 
     rec = _base("E-I1", command="intrusion ROI")
     cam = {"camera_id": "CAM-FCS-001", "extra_json": json.dumps({"roi": [[0, 0.5], [1, 0.5], [1, 1], [0, 1]]})}
-    obj = {"object_class": "person", "confidence": 0.7, "bbox": [100, 200, 80, 140]}
+    obj = {"object_class": "person", "confidence": 0.7, "detector": "yolo", "bbox": [100, 200, 80, 140]}
     hit = check(np.zeros((360, 640, 3), dtype=np.uint8), cam, [obj])
     rec["ok"] = hit is not None and hit["priority"] == "CRITICAL"
     rec["metrics"] = {"fired": bool(hit)}
@@ -171,8 +173,8 @@ def run_smoke() -> list[dict]:
     rec["ok"] = normalise("GJ 01 AB 1234") == "GJ01AB1234"
     records.append(rec)
 
-    rec = _base("E-V1", command="histogram FRS WL-004")
-    rec["ok"] = bool(hits and hits[0]["face_id"] == "WL-004")
+    rec = _base("E-V1", command="histogram FRS identifies no one")
+    rec["ok"] = not any(h.get("face_id") for h in hits)
     rec["metrics"] = {"face_id": (hits[0]["face_id"] if hits else "")}
     records.append(rec)
 

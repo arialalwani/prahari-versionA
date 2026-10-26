@@ -247,11 +247,21 @@ def _facenet_match(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
 
 
 def match(frame_bgr: np.ndarray, gallery: dict[str, list[np.ndarray]] | None = None) -> list[dict[str, Any]]:
+    """Identify enrolled people in a frame. Only a real face recogniser may answer.
+
+    The colour-histogram comparison is not face recognition: it measures colour
+    mix, so a score above the threshold does not mean two faces are the same
+    person. It is disabled for identification and alerts (Phase 0) and stays in
+    this module only until the Phase 2 recogniser replaces it. A failed FaceNet
+    no longer falls back to it either: no recogniser means no identification.
+    """
     if frame_bgr is None or getattr(frame_bgr, "size", 0) == 0:
         return []
     if _engine() == "facenet":
         try:
             return _facenet_match(frame_bgr)
         except Exception as exc:
-            log.warning("FACE_ENGINE=facenet unavailable (%s); histogram fallback", exc)
-    return _histogram_match(frame_bgr, gallery=gallery)
+            log.warning("FACE_ENGINE=facenet unavailable (%s); face identification off", exc)
+            return []
+    log.info("face identification off: FACE_ENGINE=%s is not a face recogniser", _engine())
+    return []
