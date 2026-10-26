@@ -96,3 +96,6 @@ Thumbs.db
 
 # Third-party pedestrian test footage (research use only) stays local
 03_Data/recordings/pedestrians/
+
+# Third-party pedestrian test clips (research footage) stay local
+03_Data/recordings/pedestrians/
